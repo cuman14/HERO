@@ -1,2 +1,2 @@
 @import "tailwindcss";
-@import "@hero/ui-components/src/theme/hero.css";
+@import "../../../libs/ui-components/src/theme/hero.css";
