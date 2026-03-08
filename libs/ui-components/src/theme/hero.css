@@ -1,0 +1,39 @@
+/* libs/ui-components/src/theme/hero.css */
+/* Tailwind v4 — CSS-first configuration */
+@import "tailwindcss";
+
+@theme {
+  /* Colores del sistema Hero */
+  --color-hero-bg:        #0a0e1a;
+  --color-hero-surface:   #1a2035;
+  --color-hero-border:    #1e2840;
+
+  /* Colores por app */
+  --color-admin-primary:  #4f8ef7;  /* azul */
+  --color-judge-primary:  #a78bfa;  /* violeta */
+  --color-board-primary:  #34d399;  /* esmeralda */
+
+  /* Colores de nivel (leaderboard badges) */
+  --color-level-rx:       #fbbf24;  /* amber */
+  --color-level-scaled:   #38bdf8;  /* sky */
+  --color-level-elite:    #f87171;  /* red */
+  --color-level-adaptive: #86efac;  /* green */
+
+  /* Tipografía */
+  --font-sans:  'Inter', system-ui, sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+
+  /* Radios */
+  --radius-card:   0.75rem;
+  --radius-button: 0.5rem;
+
+  /* Animaciones custom */
+  --animate-score-pop: score-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-rank-up:   rank-up 0.5s ease-out;
+}
+
+@keyframes score-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
