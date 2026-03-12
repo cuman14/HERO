@@ -25,6 +25,11 @@
       "source": "sleekdotdesign/agent-skills",
       "sourceType": "github",
       "computedHash": "3886ddabb4e56f93a18fd6da9c51181f8bce953e543a55e480757e3980af1d8f"
+    },
+    "tailwind-design-system": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "0fc7b79d08ee5168d46c6887014cbe5bd02f2c5e458858470e20fc8ecedefb46"
     }
   }
 }

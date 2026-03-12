@@ -19,7 +19,9 @@
             "input": "apps/judge/public"
           }
         ],
-        "styles": ["apps/judge/src/styles.css"]
+        "styles": ["apps/judge/src/styles.css"],
+        "serviceWorker": "apps/judge/ngsw-config.json"
+
       },
       "configurations": {
         "production": {
@@ -76,6 +78,12 @@
         "port": 4200,
         "staticFilePath": "dist/apps/judge/browser",
         "spa": true
+      }
+    },
+    "serve-pwa": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run judge:serve-static"
       }
     }
   }
