@@ -7,55 +7,34 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular/build:application",
+      "executor": "@nx/vite:build",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/judge",
-        "browser": "apps/judge/src/main.ts",
-        "tsConfig": "apps/judge/tsconfig.app.json",
-        "assets": [
-          {
-            "glob": "**/*",
-            "input": "apps/judge/public"
-          }
-        ],
-        "styles": ["apps/judge/src/styles.css"],
-        "serviceWorker": "apps/judge/ngsw-config.json"
-
+        "outputPath": "dist/apps/judge"
       },
       "configurations": {
         "production": {
-          "budgets": [
-            {
-              "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
-            },
-            {
-              "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
-            }
-          ],
-          "outputHashing": "all"
+          "mode": "production"
         },
         "development": {
-          "optimization": false,
-          "extractLicenses": false,
-          "sourceMap": true
+          "mode": "development"
         }
       },
       "defaultConfiguration": "production"
     },
     "serve": {
-      "continuous": true,
-      "executor": "@angular/build:dev-server",
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "judge:build"
+      },
       "configurations": {
         "production": {
-          "buildTarget": "judge:build:production"
+          "buildTarget": "judge:build:production",
+          "hmr": false
         },
         "development": {
-          "buildTarget": "judge:build:development"
+          "buildTarget": "judge:build:development",
+          "hmr": true
         }
       },
       "defaultConfiguration": "development"
