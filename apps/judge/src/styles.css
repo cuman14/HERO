@@ -1,2 +1,15 @@
 @import "tailwindcss";
+@source "../../../libs";
+
 @import "../../../libs/ui-components/src/theme/hero.css";
+
+@theme {
+  --color-primary: var(--color-judge-primary);
+}
+
+body {
+  background-color: var(--color-hero-bg);
+  color: white;
+  margin: 0;
+  padding: 0;
+}
