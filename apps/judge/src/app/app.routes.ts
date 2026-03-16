@@ -3,10 +3,21 @@ import { Route } from '@angular/router';
 export const appRoutes: Route[] = [
   {
     path: '',
-    loadComponent: () => import('./features/heat-access/heat-access.component').then(m => m.HeatAccessComponent)
+    redirectTo: 'heat-access',
+    pathMatch: 'full',
   },
   {
     path: 'heat-access',
-    loadComponent: () => import('./features/heat-access/heat-access.component').then(m => m.HeatAccessComponent)
-  }
+    loadComponent: () =>
+      import('./features/heat-access/heat-access.component').then(
+        (m) => m.HeatAccessComponent,
+      ),
+  },
+  {
+    path: 'heat-confirmation',
+    loadComponent: () =>
+      import('./features/heat-confirmation/heat-confirmation.component').then(
+        (m) => m.HeatConfirmationComponent,
+      ),
+  },
 ];
