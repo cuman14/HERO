@@ -18,17 +18,13 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
     >
       <div class="flex items-center gap-4">
         @if (type() === 'team') {
-          <div class="relative w-12 h-12 flex -space-x-3 shrink-0">
+          <div class="relative w-12 h-12 flex items-center shrink-0">
             <div
-              class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-slate-500 text-xs font-bold"
-            >
-              T1
-            </div>
+              class="w-10 h-10 rounded-full bg-primary/20 border-2 border-white shadow-sm flex items-center justify-center text-primary text-xs font-bold z-10"
+            ></div>
             <div
-              class="w-10 h-10 rounded-full bg-slate-300 border-2 border-white shadow-sm flex items-center justify-center text-slate-500 text-xs font-bold"
-            >
-              T2
-            </div>
+              class="w-10 h-10 rounded-full bg-slate-300 border-2 border-white shadow-sm flex items-center justify-center text-slate-500 text-xs font-bold -ml-3"
+            ></div>
           </div>
         } @else {
           <div class="relative shrink-0">
@@ -36,10 +32,7 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
               <img
                 [src]="avatarUrl()"
                 [alt]="name()"
-                class="w-12 h-12 rounded-full object-cover"
-                [class.ring-2]="selected()"
-                [class.ring-primary]="selected()"
-                [class.ring-offset-1]="selected()"
+                [class]="avatarClasses()"
               />
             } @else {
               <div
@@ -103,7 +96,7 @@ export class AthleteCardComponent {
     const base =
       'flex items-center justify-between p-4 rounded-2xl transition-all active:scale-[0.98] cursor-pointer';
     return this.selected()
-      ? `${base} bg-white border-2 border-primary shadow-md`
+      ? `${base} bg-white border-2 border-primary shadow-md overflow-hidden`
       : `${base} bg-white border border-slate-200 shadow-sm`;
   });
 
@@ -117,6 +110,13 @@ export class AthleteCardComponent {
       MASTERS: 'bg-emerald-100 text-emerald-700',
     };
     return `${base} ${map[this.categoryLabel()]}`;
+  });
+
+  avatarClasses = computed(() => {
+    const base = 'w-12 h-12 rounded-full object-cover';
+    return this.selected()
+      ? `${base} ring-2 ring-primary/20 ring-offset-1`
+      : base;
   });
 
   checkClasses = computed(() => {

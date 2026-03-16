@@ -34,9 +34,9 @@ export class TabSwitcherComponent {
   tabChange = output<string>();
 
   tabClasses(value: string): string {
-    const base = 'flex-1 py-2 text-sm font-bold rounded-lg transition-all';
+    const base = 'flex-1 py-2 text-sm font-bold transition-all';
     const active =
-      'bg-white text-slate-900 shadow-sm border border-slate-200/50';
+      'bg-white text-slate-900 rounded-lg shadow-sm border border-slate-200/50';
     const inactive = 'text-slate-500 hover:text-slate-700';
     return `${base} ${this.activeValue() === value ? active : inactive}`;
   }

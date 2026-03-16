@@ -1,14 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, input } from '@angular/core';
+import { HeroIconComponent } from '../../icons/hero-icon.component';
 
 @Component({
   selector: 'lib-wod-info-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HeroIconComponent],
   template: `
     <div
       class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white"
     >
+      <!-- Gradient overlay (matches Stitch bg-gradient-to-br from-white via-white/90 to-transparent) -->
+      <div
+        class="absolute inset-0 z-0 bg-linear-to-br from-white via-white/90 to-transparent pointer-events-none"
+      ></div>
+
       <div class="relative z-10 p-5">
         <div class="flex justify-between items-start mb-4">
           <div>
@@ -18,15 +24,19 @@ import { Component, input } from '@angular/core';
               CÓDIGO HEAT
             </p>
             <span
-              class="text-primary font-mono text-2xl font-bold tracking-tight"
+              class="font-mono text-2xl font-bold tracking-tight text-primary"
             >
               {{ heatCode() }}
             </span>
           </div>
           <div
-            class="bg-primary/10 text-primary px-3 py-2 rounded-xl flex items-center justify-center"
+            class="bg-primary/10 text-primary px-3 py-1 rounded-lg flex items-center justify-center"
           >
-            <span class="text-xl font-bold text-primary">&#9096;</span>
+            <lib-icon
+              name="bolt"
+              variant="solid"
+              iconClass="w-5 h-5 text-primary"
+            />
           </div>
         </div>
 
@@ -46,7 +56,11 @@ import { Component, input } from '@angular/core';
               Inicio
             </p>
             <div class="flex items-center gap-1">
-              <p class="text-primary font-bold text-sm">&#9201;</p>
+              <lib-icon
+                name="bolt"
+                variant="outline"
+                iconClass="w-3.5 h-3.5 text-primary"
+              />
               <p class="text-slate-700 font-bold text-sm">{{ startTime() }}</p>
             </div>
           </div>
