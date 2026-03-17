@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   AthleteCardComponent,
+  ButtonComponent,
   TabOption,
   TabSwitcherComponent,
   WodInfoCardComponent,
@@ -21,6 +22,7 @@ import {
   imports: [
     CommonModule,
     AthleteCardComponent,
+    ButtonComponent,
     TabSwitcherComponent,
     WodInfoCardComponent,
   ],

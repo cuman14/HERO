@@ -1,11 +1,13 @@
-<div class="relative flex flex-col h-screen bg-slate-50 overflow-hidden">
+<div
+  class="relative flex flex-col h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden"
+>
   <!-- Header -->
   <header
-    class="sticky top-0 z-20 flex items-center justify-between px-4 py-4 bg-white/80 backdrop-blur-[20px] border-b border-slate-200"
+    class="sticky top-0 z-20 flex items-center justify-between px-4 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[20px] border-b border-slate-200 dark:border-slate-800"
   >
     <div class="flex items-center gap-3">
       <button
-        class="text-slate-900 p-1 -ml-1 rounded-lg hover:bg-slate-100 transition-colors"
+        class="text-slate-900 dark:text-white p-1 -ml-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         (click)="onBack()"
         aria-label="Volver"
       >
@@ -22,13 +24,15 @@
         </svg>
       </button>
       <div class="flex flex-col">
-        <h1 class="text-slate-900 text-lg font-extrabold leading-tight">
+        <h1
+          class="text-slate-900 dark:text-white text-lg font-extrabold leading-tight"
+        >
           {{ heat.wodName }} · {{ heat.wodType }} {{ heat.timeCap }}
         </h1>
       </div>
     </div>
     <span
-      class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold border border-slate-200"
+      class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700"
     >
       {{ heat.totalAthletes }} ATLETAS
     </span>
@@ -56,7 +60,7 @@
       />
       <div class="relative">
         <svg
-          class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+          class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -68,7 +72,7 @@
           <path d="m21 21-4.35-4.35" />
         </svg>
         <input
-          class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-slate-400 shadow-sm transition-all outline-none"
+          class="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm transition-all outline-none"
           placeholder="Buscar atleta por nombre o dorsal..."
           type="text"
           [value]="searchQuery()"
@@ -81,7 +85,7 @@
     <div class="px-4 mt-8 space-y-6">
       @if (groupedAthletes().length === 0) {
         <div
-          class="flex flex-col items-center justify-center py-16 text-slate-400"
+          class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500"
         >
           <svg
             class="w-12 h-12 mb-3 opacity-40"
@@ -95,14 +99,16 @@
             <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
-          <p class="text-sm font-medium">No se encontraron atletas</p>
+          <p class="text-sm font-medium text-slate-400 dark:text-slate-500">
+            No se encontraron atletas
+          </p>
         </div>
       }
 
       @for (group of groupedAthletes(); track group.label) {
         <section>
           <h3
-            class="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1 mb-3"
+            class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-3"
           >
             {{ group.label }}
           </h3>
@@ -128,12 +134,12 @@
 
   <!-- Sticky Footer -->
   <footer
-    class="absolute bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-[20px] border-t border-slate-200 shadow-[0_-8px_24px_rgba(0,0,0,0.05)] pb-10"
+    class="absolute bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-[20px] border-t border-slate-200 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.4)] pb-10"
   >
     <div class="flex items-center justify-between mb-4 px-1">
       <div class="flex items-center gap-2">
         <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-        <p class="text-xs font-bold text-slate-500">
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400">
           {{ heat.wodName }} · {{ heat.location }}
         </p>
       </div>
@@ -142,28 +148,12 @@
       </p>
     </div>
 
-    <button
-      class="w-full h-[56px] bg-primary hover:bg-violet-600 active:scale-[0.97] text-white font-extrabold text-lg rounded-2xl transition-all shadow-xl shadow-primary/30 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-      [disabled]="!canContinue() || isContinuing()"
-      (click)="onContinue()"
+    <lib-button
+      [loading]="isContinuing()"
+      [disabled]="!canContinue()"
+      (clicked)="onContinue()"
     >
-      @if (isContinuing()) {
-        <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          />
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
-        </svg>
-      } @else {
+      @if (!isContinuing()) {
         <span>Continuar</span>
         <svg
           class="w-5 h-5"
@@ -177,6 +167,6 @@
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       }
-    </button>
+    </lib-button>
   </footer>
 </div>

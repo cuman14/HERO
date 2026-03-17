@@ -8,11 +8,11 @@ import { HeroIconComponent } from '../../icons/hero-icon.component';
   imports: [CommonModule, HeroIconComponent],
   template: `
     <div
-      class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white"
+      class="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900"
     >
       <!-- Gradient overlay (matches Stitch bg-gradient-to-br from-white via-white/90 to-transparent) -->
       <div
-        class="absolute inset-0 z-0 bg-linear-to-br from-white via-white/90 to-transparent pointer-events-none"
+        class="absolute inset-0 z-0 bg-linear-to-br from-white dark:from-slate-900 via-white/90 dark:via-slate-900/90 to-transparent pointer-events-none"
       ></div>
 
       <div class="relative z-10 p-5">
@@ -30,7 +30,7 @@ import { HeroIconComponent } from '../../icons/hero-icon.component';
             </span>
           </div>
           <div
-            class="bg-primary/10 text-primary px-3 py-1 rounded-lg flex items-center justify-center"
+            class="bg-primary/10 dark:bg-primary/20 text-primary px-3 py-1 rounded-lg flex items-center justify-center"
           >
             <lib-icon
               name="bolt"
@@ -40,16 +40,20 @@ import { HeroIconComponent } from '../../icons/hero-icon.component';
           </div>
         </div>
 
-        <h2 class="text-slate-900 text-xl font-extrabold mb-4">
+        <h2 class="text-slate-900 dark:text-white text-xl font-extrabold mb-4">
           {{ wodName() }}
         </h2>
 
-        <div class="flex items-center gap-6 pt-4 border-t border-slate-100">
+        <div
+          class="flex items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800"
+        >
           <div>
             <p class="text-[10px] font-bold uppercase text-slate-400 mb-0.5">
               Categoría
             </p>
-            <p class="text-slate-700 font-bold text-sm">{{ category() }}</p>
+            <p class="text-slate-700 dark:text-slate-300 font-bold text-sm">
+              {{ category() }}
+            </p>
           </div>
           <div>
             <p class="text-[10px] font-bold uppercase text-slate-400 mb-0.5">
@@ -61,7 +65,9 @@ import { HeroIconComponent } from '../../icons/hero-icon.component';
                 variant="outline"
                 iconClass="w-3.5 h-3.5 text-primary"
               />
-              <p class="text-slate-700 font-bold text-sm">{{ startTime() }}</p>
+              <p class="text-slate-700 dark:text-slate-300 font-bold text-sm">
+                {{ startTime() }}
+              </p>
             </div>
           </div>
           @if (timeCap()) {
@@ -69,7 +75,9 @@ import { HeroIconComponent } from '../../icons/hero-icon.component';
               <p class="text-[10px] font-bold uppercase text-slate-400 mb-0.5">
                 Time Cap
               </p>
-              <p class="text-slate-700 font-bold text-sm">{{ timeCap() }}</p>
+              <p class="text-slate-700 dark:text-slate-300 font-bold text-sm">
+                {{ timeCap() }}
+              </p>
             </div>
           }
         </div>

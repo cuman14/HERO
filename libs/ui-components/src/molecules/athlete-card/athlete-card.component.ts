@@ -20,10 +20,10 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
         @if (type() === 'team') {
           <div class="relative w-12 h-12 flex items-center shrink-0">
             <div
-              class="w-10 h-10 rounded-full bg-primary/20 border-2 border-white shadow-sm flex items-center justify-center text-primary text-xs font-bold z-10"
+              class="w-10 h-10 rounded-full bg-primary/20 border-2 border-white dark:border-slate-900 shadow-sm flex items-center justify-center text-primary text-xs font-bold z-10"
             ></div>
             <div
-              class="w-10 h-10 rounded-full bg-slate-300 border-2 border-white shadow-sm flex items-center justify-center text-slate-500 text-xs font-bold -ml-3"
+              class="w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-700 border-2 border-white dark:border-slate-900 shadow-sm flex items-center justify-center text-slate-500 dark:text-slate-400 text-xs font-bold -ml-3"
             ></div>
           </div>
         } @else {
@@ -36,7 +36,7 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
               />
             } @else {
               <div
-                class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-lg"
+                class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-lg"
               >
                 {{ name().charAt(0) }}
               </div>
@@ -46,7 +46,9 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
 
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-0.5">
-            <p class="text-slate-900 font-bold text-base truncate">
+            <p
+              class="text-slate-900 dark:text-white font-bold text-base truncate"
+            >
               {{ name() }}
             </p>
             <span [class]="badgeClasses()">{{ categoryLabel() }}</span>
@@ -96,18 +98,20 @@ export class AthleteCardComponent {
     const base =
       'flex items-center justify-between p-4 rounded-2xl transition-all active:scale-[0.98] cursor-pointer';
     return this.selected()
-      ? `${base} bg-white border-2 border-primary shadow-md overflow-hidden`
-      : `${base} bg-white border border-slate-200 shadow-sm`;
+      ? `${base} bg-white dark:bg-slate-900 border-2 border-primary shadow-md overflow-hidden`
+      : `${base} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm`;
   });
 
   badgeClasses = computed(() => {
     const base =
       'text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0';
     const map: Record<AthleteCategoryLabel, string> = {
-      RX: 'bg-primary/10 text-primary',
-      SCALED: 'bg-amber-100 text-amber-700',
-      TEAMS: 'bg-slate-900 text-white',
-      MASTERS: 'bg-emerald-100 text-emerald-700',
+      RX: 'bg-primary/10 dark:bg-primary/20 text-primary',
+      SCALED:
+        'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400',
+      TEAMS: 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900',
+      MASTERS:
+        'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400',
     };
     return `${base} ${map[this.categoryLabel()]}`;
   });
@@ -124,6 +128,6 @@ export class AthleteCardComponent {
       'flex items-center justify-center w-6 h-6 rounded-full shrink-0 transition-all';
     return this.selected()
       ? `${base} bg-primary shadow-sm shadow-primary/40`
-      : `${base} border-2 border-slate-200 bg-slate-50`;
+      : `${base} border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50`;
   });
 }

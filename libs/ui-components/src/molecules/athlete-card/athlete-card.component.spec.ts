@@ -103,8 +103,14 @@ describe('AthleteCardComponent', () => {
     fixture.componentRef.setInput('type', 'team');
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('T1');
-    expect(compiled.textContent).toContain('T2');
+    const teamStubsContainer = compiled.querySelector(
+      '.flex.items-center.shrink-0',
+    );
+    expect(teamStubsContainer).not.toBeNull();
+    const stubs = compiled.querySelectorAll(
+      '.rounded-full.border-2.border-white',
+    );
+    expect(stubs.length).toBeGreaterThanOrEqual(2);
   });
 
   it('should apply TEAMS badge style for categoryLabel TEAMS', () => {
