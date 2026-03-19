@@ -1,0 +1,8 @@
+{
+  "name": "heat",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/contexts/heat/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {}
+}

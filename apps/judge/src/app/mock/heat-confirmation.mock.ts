@@ -12,7 +12,10 @@ export interface MockAthlete {
   teamMembers?: string[];
 }
 
+export type HeatCardStatus = 'pending' | 'in_progress' | 'completed';
+
 export interface MockHeat {
+  id: string;
   code: string;
   wodName: string;
   wodType: string;
@@ -21,6 +24,7 @@ export interface MockHeat {
   startTime: string;
   totalAthletes: number;
   location: string;
+  status: HeatCardStatus;
 }
 
 export interface MockJudge {
@@ -29,6 +33,7 @@ export interface MockJudge {
 }
 
 export const MOCK_HEAT: MockHeat = {
+  id: 'mock-heat-a3x9',
   code: 'HEAT-A3X9',
   wodName: 'WOD 2: AMRAP 12',
   wodType: 'AMRAP',
@@ -37,6 +42,7 @@ export const MOCK_HEAT: MockHeat = {
   startTime: '14:30h',
   totalAthletes: 8,
   location: 'Box Madrid',
+  status: 'pending',
 };
 
 export const MOCK_JUDGE: MockJudge = {

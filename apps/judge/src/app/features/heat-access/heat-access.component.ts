@@ -1,11 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  ButtonComponent,
-  HeroIconComponent,
-  InputComponent,
-} from '@hero/ui-components';
+import { ButtonComponent, HeroIconComponent, InputComponent } from '@hero/ui';
 
 @Component({
   selector: 'app-heat-access',
@@ -49,6 +45,8 @@ export class HeatAccessComponent {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     this.isSubmitting.set(false);
-    this.router.navigate(['/heat-confirmation']);
+    this.router.navigate(['/heat-confirmation'], {
+      queryParams: { heatCode: this.heatCode().trim() },
+    });
   }
 }
