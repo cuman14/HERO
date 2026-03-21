@@ -3,31 +3,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
-  OnInit,
+  input,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  AthleteCardComponent,
-  ButtonComponent,
-  WodInfoCardComponent,
-} from '@hero/ui';
+import { ButtonComponent } from '@hero/ui';
 import {
   type HeatConfirmationAthlete,
   type HeatConfirmationHeat,
 } from '../../../domain/heat-confirmation.model';
 import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
+import { type HeatConfirmationSummaryData } from '../../resolvers/heat-confirmation-summary.resolver';
 
 @Component({
   selector: 'app-heat-confirmation-summary',
   standalone: true,
-  imports: [
-    CommonModule,
-    AthleteCardComponent,
-    ButtonComponent,
-    WodInfoCardComponent,
-  ],
+  imports: [CommonModule, ButtonComponent],
   templateUrl: './heat-confirmation-summary.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -39,13 +32,19 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
     `,
   ],
 })
-export class HeatConfirmationSummaryPage implements OnInit {
+export class HeatConfirmationSummaryPage {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
+
+  // Resolver data input - bound via withComponentInputBinding
+  readonly data = input<HeatConfirmationSummaryData>();
 
   readonly heatPayload = signal<HeatConfirmationPayload | null>(null);
   readonly selectedAthleteId = signal<string | null>(null);
   readonly isConfirming = signal<boolean>(false);
+
+  // Mock movements data - not available in database yet
+  readonly movements = signal<string[]>(['Thrusters', 'Pull-ups']);
 
   readonly heat = computed<HeatConfirmationHeat | null>(
     () => this.heatPayload()?.heat ?? null,
@@ -58,33 +57,17 @@ export class HeatConfirmationSummaryPage implements OnInit {
   });
 
   constructor() {
-    // Retrieve state passed during navigation
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as {
-      heatPayload?: HeatConfirmationPayload;
-      selectedAthleteId?: string;
-    };
-
-    if (state?.heatPayload && state?.selectedAthleteId) {
-      this.heatPayload.set(state.heatPayload);
-      this.selectedAthleteId.set(state.selectedAthleteId);
-    } else {
-      // Fallback to history state if accessing directly or via refresh
-      const historyState = this.location.getState() as {
-        heatPayload?: HeatConfirmationPayload;
-        selectedAthleteId?: string;
-      } | null;
-      if (historyState?.heatPayload && historyState?.selectedAthleteId) {
-        this.heatPayload.set(historyState.heatPayload);
-        this.selectedAthleteId.set(historyState.selectedAthleteId);
+    // Sync input data to signals when resolver data changes
+    effect(() => {
+      const resolvedData = this.data();
+      if (resolvedData?.heatPayload && resolvedData?.selectedAthleteId) {
+        this.heatPayload.set(resolvedData.heatPayload);
+        this.selectedAthleteId.set(resolvedData.selectedAthleteId);
+      } else {
+        // Redirect if no data available
+        this.router.navigate(['/heat-access'], { replaceUrl: true });
       }
-    }
-  }
-
-  ngOnInit(): void {
-    if (!this.heatPayload() || !this.selectedAthleteId()) {
-      this.router.navigate(['/heat-access'], { replaceUrl: true });
-    }
+    });
   }
 
   onConfirm(): void {

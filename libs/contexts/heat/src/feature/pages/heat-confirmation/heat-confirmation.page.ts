@@ -127,10 +127,12 @@ export class HeatConfirmationPage {
 
   onContinue(): void {
     if (!this.canContinue()) return;
+    const heat = this.heat();
+    if (!heat) return;
     this.router.navigate(['/heat-confirmation-summary'], {
-      state: {
-        heatPayload: this.heatPayload(),
-        selectedAthleteId: this.selectedId(),
+      queryParams: {
+        heatCode: heat.code,
+        athleteId: this.selectedId(),
       },
     });
   }
