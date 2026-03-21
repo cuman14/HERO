@@ -2,22 +2,23 @@
 
 // Domain
 export {
-  type HeatCardStatus,
-  type HeatConfirmationHeat,
   type AthleteCategoryLabel,
+  type HeatCardStatus,
   type HeatConfirmationAthlete,
+  type HeatConfirmationHeat,
 } from './domain/heat-confirmation.model';
 
 // Infrastructure
 export {
+  HEAT_REPOSITORY,
   type HeatConfirmationPayload,
   type HeatRepository,
-  HEAT_REPOSITORY,
 } from './infrastructure/heat.repository';
 
 // Application
 export { HeatConfirmationFacade } from './application/heat-confirmation.facade';
 
 // Feature
-export { heatConfirmationResolver } from './feature/heat-confirmation.resolver';
 export { provideHeatContext } from './feature/heat.providers';
+export { heatRoutes } from './feature/heat.routes';
+export { heatConfirmationResolver } from './feature/resolvers/heat-confirmation.resolver';

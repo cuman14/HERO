@@ -19,12 +19,54 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
       <div class="flex items-center gap-4">
         @if (type() === 'team') {
           <div class="relative w-12 h-12 flex items-center shrink-0">
-            <div
-              class="w-10 h-10 rounded-full bg-primary/20 border-2 border-white dark:border-slate-900 shadow-sm flex items-center justify-center text-primary text-xs font-bold z-10"
-            ></div>
-            <div
-              class="w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-700 border-2 border-white dark:border-slate-900 shadow-sm flex items-center justify-center text-slate-500 dark:text-slate-400 text-xs font-bold -ml-3"
-            ></div>
+            @if (teamMemberAvatars()[0]) {
+              <img
+                [src]="teamMemberAvatars()[0]"
+                alt="Team member 1"
+                class="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-900 shadow-sm z-10"
+              />
+            } @else {
+              <div
+                class="w-10 h-10 rounded-full bg-primary/20 border-2 border-white dark:border-slate-900 shadow-sm flex items-center justify-center text-primary z-10"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="w-5 h-5"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+            }
+            @if (teamMemberAvatars()[1]) {
+              <img
+                [src]="teamMemberAvatars()[1]"
+                alt="Team member 2"
+                class="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-900 shadow-sm -ml-3"
+              />
+            } @else {
+              <div
+                class="w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-700 border-2 border-white dark:border-slate-900 shadow-sm flex items-center justify-center text-slate-500 dark:text-slate-400 -ml-3"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="w-5 h-5"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+            }
           </div>
         } @else {
           <div class="relative shrink-0">
@@ -91,6 +133,7 @@ export class AthleteCardComponent {
   type = input<'individual' | 'team'>('individual');
   selected = input<boolean>(false);
   avatarUrl = input<string>('');
+  teamMemberAvatars = input<[string?, string?]>([]);
 
   cardClick = output<string>();
 

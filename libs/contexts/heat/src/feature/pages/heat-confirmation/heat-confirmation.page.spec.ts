@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { type HeatConfirmationPayload } from '@hero/heat';
-import { HeatConfirmationComponent } from './heat-confirmation.component';
+import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
+import { HeatConfirmationPage } from './heat-confirmation.page';
 
 const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
   heat: {
@@ -62,17 +62,17 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
   ],
 };
 
-describe('HeatConfirmationComponent', () => {
-  let fixture: ComponentFixture<HeatConfirmationComponent>;
-  let component: HeatConfirmationComponent;
+describe('HeatConfirmationPage', () => {
+  let fixture: ComponentFixture<HeatConfirmationPage>;
+  let component: HeatConfirmationPage;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeatConfirmationComponent],
+      imports: [HeatConfirmationPage],
       providers: [provideRouter([])],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(HeatConfirmationComponent);
+    fixture = TestBed.createComponent(HeatConfirmationPage);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('heatPayload', FIXTURE_PAYLOAD);
     fixture.detectChanges();

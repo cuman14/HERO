@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import {
   type HeatConfirmationAthlete,
   type HeatConfirmationHeat,
-  type HeatConfirmationPayload,
-} from '@hero/heat';
+} from '../../../domain/heat-confirmation.model';
+import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
 import {
   AthleteCardComponent,
   ButtonComponent,
@@ -24,7 +24,7 @@ import {
     TabSwitcherComponent,
     WodInfoCardComponent,
   ],
-  templateUrl: './heat-confirmation.component.html',
+  templateUrl: './heat-confirmation.page.html',
   styles: [
     `
       :host {
@@ -34,7 +34,7 @@ import {
     `,
   ],
 })
-export class HeatConfirmationComponent {
+export class HeatConfirmationPage {
   private readonly router = inject(Router);
 
   readonly heatPayload = input<HeatConfirmationPayload | null>(null);

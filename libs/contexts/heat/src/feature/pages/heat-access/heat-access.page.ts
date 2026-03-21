@@ -7,7 +7,7 @@ import { ButtonComponent, HeroIconComponent, InputComponent } from '@hero/ui';
   selector: 'app-heat-access',
   standalone: true,
   imports: [CommonModule, ButtonComponent, InputComponent, HeroIconComponent],
-  templateUrl: './heat-access.component.html',
+  templateUrl: './heat-access.page.html',
   styles: [
     `
       :host {
@@ -22,7 +22,7 @@ import { ButtonComponent, HeroIconComponent, InputComponent } from '@hero/ui';
     `,
   ],
 })
-export class HeatAccessComponent {
+export class HeatAccessPage {
   private router = inject(Router);
 
   // Signals for state

@@ -1,14 +1,14 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   type EnvironmentProviders,
   makeEnvironmentProviders,
 } from '@angular/core';
-import { type SupabaseConfig, SUPABASE_CONFIG } from './client';
-import { supabaseInterceptor } from './supabase.interceptor';
+import { createClient } from '@supabase/supabase-js';
+import { type SupabaseConfig, SUPABASE_CLIENT } from './client';
 
 export function provideSupabase(config: SupabaseConfig): EnvironmentProviders {
+  const supabaseClient = createClient(config.url, config.anonKey);
+
   return makeEnvironmentProviders([
-    provideHttpClient(withInterceptors([supabaseInterceptor])),
-    { provide: SUPABASE_CONFIG, useValue: config },
+    { provide: SUPABASE_CLIENT, useValue: supabaseClient },
   ]);
 }

@@ -1,16 +1,19 @@
 import { Injectable, inject } from '@angular/core';
-import { map, of, switchMap, type Observable } from 'rxjs';
-import { RestClient } from '@hero/core';
-import { type HeatConfirmationPayload, type HeatRepository } from './heat.repository';
+import { SUPABASE_CLIENT } from '@hero/core';
+import { from, map, of, switchMap, type Observable } from 'rxjs';
 import {
   HeatConfirmationMapper,
   type HeatAthleteWithRelationsRow,
   type HeatWithRelationsRow,
 } from './heat-confirmation.mapper';
+import {
+  type HeatConfirmationPayload,
+  type HeatRepository,
+} from './heat.repository';
 
 @Injectable({ providedIn: 'root' })
 export class HeatRepositorySupabase implements HeatRepository {
-  private readonly restClient = inject(RestClient);
+  private readonly supabase = inject(SUPABASE_CLIENT);
 
   getHeatConfirmationData(params: {
     heatId?: string;
@@ -45,41 +48,56 @@ export class HeatRepositorySupabase implements HeatRepository {
     heatId?: string;
     heatCode?: string;
   }): Observable<HeatWithRelationsRow | null> {
-    const filters: string[] = [
-      'select=id,name,status,scheduled_at,wods(id,name,type,base_config,categories(name),events(location))',
-    ];
-
-    if (params.heatId) {
-      filters.push(`id=eq.${encodeURIComponent(params.heatId)}`);
-    } else if (params.heatCode) {
-      filters.push(`name=eq.${encodeURIComponent(params.heatCode)}`);
-    } else {
+    if (!params.heatId && !params.heatCode) {
       return of(null);
     }
 
-    filters.push('limit=1');
+    let query = this.supabase
+      .from('heats')
+      .select(
+        'id,name,status,scheduled_at,wods(id,name,type,base_config,categories(name),events(location))',
+      )
+      .limit(1);
 
-    return this.restClient
-      .get<HeatWithRelationsRow[]>(`/heats?${filters.join('&')}`)
-      .pipe(map((rows) => rows[0] ?? null));
+    if (params.heatId) {
+      query = query.eq('id', params.heatId);
+    } else if (params.heatCode) {
+      query = query.eq('name', params.heatCode);
+    }
+
+    return from(query.single()).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          // Supabase throws PGRST116 when no rows are returned from single(), we handle it as null
+          if (error.code === 'PGRST116') return null;
+          throw error;
+        }
+        return data as unknown as HeatWithRelationsRow;
+      }),
+    );
   }
 
   private fetchHeatAthletes(params: {
     heatId: string;
     judgeId?: string;
   }): Observable<HeatAthleteWithRelationsRow[]> {
-    const filters: string[] = [
-      'select=athlete_id,team_id,lane,athletes(id,name,bib_number,box),teams(id,name,bib_number,box,team_members(name))',
-      `heat_id=eq.${encodeURIComponent(params.heatId)}`,
-      'order=lane.asc.nullslast',
-    ];
+    let query = this.supabase
+      .from('heat_athletes')
+      .select(
+        'athlete_id,team_id,lane,athletes(id,name,bib_number,box),teams(id,name,bib_number,box,team_members(name))',
+      )
+      .eq('heat_id', params.heatId)
+      .order('lane', { ascending: true, nullsFirst: false });
 
     if (params.judgeId) {
-      filters.push(`judge_id=eq.${encodeURIComponent(params.judgeId)}`);
+      query = query.eq('judge_id', params.judgeId);
     }
 
-    return this.restClient.get<HeatAthleteWithRelationsRow[]>(
-      `/heat_athletes?${filters.join('&')}`,
+    return from(query).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as unknown as HeatAthleteWithRelationsRow[];
+      }),
     );
   }
 }
