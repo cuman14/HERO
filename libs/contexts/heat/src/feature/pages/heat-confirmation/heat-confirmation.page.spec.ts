@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
 import { HeatConfirmationPage } from './heat-confirmation.page';
 
@@ -65,8 +65,13 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
 describe('HeatConfirmationPage', () => {
   let fixture: ComponentFixture<HeatConfirmationPage>;
   let component: HeatConfirmationPage;
+  let router: Router;
 
   beforeEach(async () => {
+    router = {
+      navigate: vi.fn(),
+    } as unknown as Router;
+
     await TestBed.configureTestingModule({
       imports: [HeatConfirmationPage],
       providers: [provideRouter([])],
@@ -74,6 +79,10 @@ describe('HeatConfirmationPage', () => {
 
     fixture = TestBed.createComponent(HeatConfirmationPage);
     component = fixture.componentInstance;
+
+    // Override the injected router with our mock to spy on navigate
+    Object.defineProperty(component, 'router', { value: router });
+
     fixture.componentRef.setInput('heatPayload', FIXTURE_PAYLOAD);
     fixture.detectChanges();
   });
@@ -178,6 +187,21 @@ describe('HeatConfirmationPage', () => {
   it('should enable continue when at least one athlete is selected', () => {
     component.toggleSelection('ath-001');
     expect(component.canContinue()).toBe(true);
+  });
+
+  it('should navigate to summary page with state on continue', () => {
+    component.toggleSelection('ath-001');
+    component.onContinue();
+
+    expect(router.navigate).toHaveBeenCalledWith(
+      ['/heat-confirmation-summary'],
+      {
+        state: {
+          heatPayload: FIXTURE_PAYLOAD,
+          selectedAthleteId: 'ath-001',
+        },
+      },
+    );
   });
 
   it('should group athletes by category label and detail', () => {
