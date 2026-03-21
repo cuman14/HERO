@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => ({
     port: 4200,
     host: '0.0.0.0',
   },
+  envPrefix: ['VITE_', 'NX_PUBLIC_'],
   plugins: [
     angular(),
     tailwindcss(),

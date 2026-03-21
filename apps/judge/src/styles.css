@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @source "../../../libs";
 
-@import "../../../libs/ui-components/src/theme/hero.css";
+@import "../../../libs/ui/src/theme/hero.css";
 
 @theme {
   --color-primary: var(--color-judge-primary);
