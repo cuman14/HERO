@@ -1,4 +1,4 @@
-# ScoreApp — AI Editor Rules & Development Guidelines
+# H.E.R.O — AI Editor Rules & Development Guidelines
 
 > These rules apply to **Antigravity** and **Windsurf** AI editors.  
 > Every code generation, refactor, or suggestion MUST follow this document.
@@ -7,7 +7,7 @@
 
 ## 1. Project Context
 
-ScoreApp is a SaaS platform for managing results in high-intensity fitness competitions (CrossFit, Hyrox). It consists of three modules in a **Nx monorepo**:
+H.E.R.O is a SaaS platform for managing results in high-intensity fitness competitions (CrossFit, Hyrox). It consists of three modules in a **Nx monorepo**:
 
 | Module | Tech | Target |
 |--------|------|--------|
@@ -25,7 +25,7 @@ ScoreApp is a SaaS platform for managing results in high-intensity fitness compe
 ## 2. Monorepo Structure (Nx)
 
 ```
-scoreapp/
+H.E.R.O/
 ├── apps/
 │   ├── admin/                    # Angular Admin Panel
 │   ├── judge/                    # Angular PWA Judge Interface
@@ -114,8 +114,8 @@ export interface ScoreRepository {
 // libs/application/score/submit-score.use-case.ts
 import { inject, Injectable } from '@angular/core';
 import { SCORE_REPOSITORY } from './score.tokens';
-import { Score } from '@scoreapp/domain/score';
-import { RepCount } from '@scoreapp/domain/score';
+import { Score } from '@H.E.R.O/domain/score';
+import { RepCount } from '@H.E.R.O/domain/score';
 
 @Injectable()
 export class SubmitScoreUseCase {
@@ -143,8 +143,8 @@ export class SubmitScoreUseCase {
 // libs/infrastructure/supabase/score.repository.supabase.ts
 import { inject, Injectable } from '@angular/core';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { ScoreRepository } from '@scoreapp/domain/score';
-import { Score } from '@scoreapp/domain/score';
+import { ScoreRepository } from '@H.E.R.O/domain/score';
+import { Score } from '@H.E.R.O/domain/score';
 
 @Injectable()
 export class ScoreRepositorySupabase implements ScoreRepository {
@@ -504,7 +504,7 @@ Before generating any code, the AI agent must verify:
 - [ ] Tailwind v4 classes only, no inline styles
 - [ ] A `.spec.ts` file is created alongside every new component
 - [ ] Pattern usage is justified with a comment block
-- [ ] Nx path aliases used (`@scoreapp/domain/score`, not relative `../../`)
+- [ ] Nx path aliases used (`@H.E.R.O/domain/score`, not relative `../../`)
 - [ ] No business logic in templates
 - [ ] Touch targets ≥ 48px in Judge and Leaderboard
 - [ ] Commit message follows Conventional Commits format
