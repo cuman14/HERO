@@ -1,6 +1,7 @@
 import { type Route } from '@angular/router';
-import { heatConfirmationResolver } from './resolvers/heat-confirmation.resolver';
 import { provideHeatContext } from './heat.providers';
+import { heatConfirmationSummaryResolver } from './resolvers/heat-confirmation-summary.resolver';
+import { heatConfirmationResolver } from './resolvers/heat-confirmation.resolver';
 
 export const heatRoutes: Route[] = [
   {
@@ -21,6 +22,14 @@ export const heatRoutes: Route[] = [
           import('./pages/heat-confirmation/heat-confirmation.page').then(
             (m) => m.HeatConfirmationPage,
           ),
+      },
+      {
+        path: 'heat-confirmation-summary',
+        resolve: { data: heatConfirmationSummaryResolver },
+        loadComponent: () =>
+          import(
+            './pages/heat-confirmation-summary/heat-confirmation-summary.page'
+          ).then((m) => m.HeatConfirmationSummaryPage),
       },
     ],
   },

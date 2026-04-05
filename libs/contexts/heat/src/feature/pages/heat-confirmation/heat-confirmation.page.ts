@@ -2,17 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  type HeatConfirmationAthlete,
-  type HeatConfirmationHeat,
-} from '../../../domain/heat-confirmation.model';
-import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
-import {
   AthleteCardComponent,
   ButtonComponent,
   TabOption,
   TabSwitcherComponent,
   WodInfoCardComponent,
 } from '@hero/ui';
+import {
+  type HeatConfirmationAthlete,
+  type HeatConfirmationHeat,
+} from '../../../domain/heat-confirmation.model';
+import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
 
 @Component({
   selector: 'app-heat-confirmation',
@@ -127,7 +127,14 @@ export class HeatConfirmationPage {
 
   onContinue(): void {
     if (!this.canContinue()) return;
-    this.router.navigate(['/scoring']);
+    const heat = this.heat();
+    if (!heat) return;
+    this.router.navigate(['/heat-confirmation-summary'], {
+      queryParams: {
+        heatCode: heat.code,
+        athleteId: this.selectedId(),
+      },
+    });
   }
 
   onBack(): void {
