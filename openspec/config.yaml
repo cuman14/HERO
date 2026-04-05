@@ -3,46 +3,67 @@
 # ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
 
-# ── Global Context (Arquitectura, Stack y Reglas de Oro) ─────────────────────
+# ── Global Context (Injected into every agent prompt) ────────────────────────
 context: |
   Project: H.E.R.O. (High Performance Event Result Organizer).
+  Identity: Real-time competition management for CrossFit/Hyrox. Offline-first.
   Deadline: 2026-04-11 (Demo BOX Madrid).
 
-  Stack & Architecture:
-  - NX Monorepo, Angular 21 (Signals, inject(), OnPush), Tailwind v4.
-  - Pattern: Hexagonal/DDD (domain -> application -> feature -> infrastructure).
-  - Database: Supabase. Types in 'libs/types/src/database.types.ts'.
+  Apps Definition:
+  - admin: [apps/admin] Angular 21, Desktop/Tablet.
+  - judge: [apps/judge] Angular 21 PWA, Mobile, Offline-first.
+  - leaderboard: [apps/leaderboard] Astro 4, TV/Projector.
 
-  Architectural Guardrails:
-  - Component communication: ONLY via Service Facades/Signal Stores.
-  - Dependency Injection: Use inject() function only. No constructors.
-  - Reactivity: Signal-based inputs/outputs. No RxJS en componentes.
+  Tech Stack:
+  - Core: NX Monorepo, Angular 21 (Signals, inject(), OnPush), Tailwind v4.
+  - State Management: @ngrx/signals. Styling: Tailwind v4 (CSS-first).
+  - Database: Supabase (ID: blgssvpsobfpfxghigca, Region: eu-west-3).
+  - Types: 'libs/types/src/database.types.ts' (via supabase gen types).
+  - Testing: Vitest + Angular Testing Library.
+
+  Architecture (DDD + Hexagonal):
+  - domain: Pure models, Value Objects, helpers. Zero dependencies.
+  - application: Facade + Signal Store. Depends only on domain.
+  - infrastructure: Repository implementation + Supabase SDK + Mappers.
+  - feature: Pages, Resolvers, Providers.
+  - ui: Dumb components. Styles from Stitch/Tailwind. Types from domain only.
+  - Flow: Component → Signal Store → Facade → Repo Interface → Supabase Implementation.
+
+  Architectural Guardrails (ALWAYS FOLLOW):
+  - Component communication: ONLY via Service Facades or Signal Stores. No direct Repo access.
+  - Dependency Injection: Use inject() function only. Strictly no constructors.
+  - Reactivity: Use signal-based input(), output(), and computed(). No RxJS in components.
   - Git: Branches must follow 'feature/<scope>-<description>'.
 
-  Glossary: WOD, AMRAP, For Time, Heat, RX, Scaled, Bib Number.
+  Glossary & Scopes:
+  - Terms: WOD, AMRAP, For Time, Heat, RX, Scaled, Bib Number.
+  - Scopes: admin, judge, leaderboard, heat, score, athlete, auth, event, infra, ui, nx.
 
-# ── Rules by Artifact (Instrucciones de Flujo OPSX) ──────────────────────────
+# ── Rules by Artifact (OPSX Workflow Instructions) ──────────────────────────
 rules:
   proposal:
-    - "Git: Crear rama 'feature/<scope>-<description>' antes de empezar."
-    - 'STITCH/DESCRIPTION EVALUATION: El agente debe evaluar la naturaleza del cambio:'
-    - "1. Si es un desarrollo de pantalla nueva o rediseño complejo y NO hay bloque '## Stitch Instructions': PREGUNTAR por los IDs de Stitch."
-    - '2. Si el cambio es una mejora lógica, ajuste de infraestructura o un cambio visual descrito detalladamente por el usuario: PROCEDER usando la descripción de texto como fuente de verdad.'
-    - 'Action: Si se proporcionan IDs de Stitch, usar el MCP para descargar imágenes y código fuente (curl -L).'
+    - "Git Action: Automatically create the branch 'feature/<scope>-<description>' before drafting the proposal."
+    - 'STITCH/DESCRIPTION EVALUATION: The agent must evaluate the nature of the change:'
+    - "1. If it is a new screen or complex UI redesign and NO '## Stitch Instructions' block is provided: MANDATORY STOP and ask for Stitch Project/Screen IDs."
+    - '2. If the change is a logic improvement, infrastructure fix, or a UI change described in detail via text: PROCEED using the text description as the source of truth.'
+    - "Action: If Stitch IDs are provided, use the MCP server to download images and source code via 'curl -L'."
 
   specs:
-    - 'Format: GIVEN/WHEN/THEN. UX: Touch targets 48x48px (Judge App).'
+    - 'Format: Functional requirements in GIVEN/WHEN/THEN format.'
+    - 'UX: Minimum 48x48px touch targets for all interactive elements in the Judge App.'
+    - 'Offline: Define behavior for network failure scenarios (local queueing/syncing).'
 
   design:
-    - 'Decomposition: Listar Dumb Components (UI), Smart Components (Feature) y Domain Models.'
-    - 'Si hay Stitch: Usar los tokens y estructura visual del diseño.'
-    - 'Si es por Descripción: El agente debe proponer una estructura visual coherente con Tailwind v4 basada en el texto del usuario.'
-    - 'Mock Strategy: Definir stubs de datos estáticos para las fases iniciales.'
+    - 'Decomposition: Explicitly list: 1. Dumb Components (UI), 2. Smart Components (Feature), 3. Domain Models.'
+    - 'If Stitch is used: Adopt Design Tokens and visual structure directly from the design.'
+    - 'If Text-based: Propose a visual structure consistent with Tailwind v4 based on the description.'
+    - 'Mock Strategy: Define static data stubs for the initial implementation phases.'
 
   tasks:
-    - 'Fase 1 (Domain): Modelos e interfaces puras.'
-    - 'Fase 2 (Application): Stores con MOCK DATA.'
-    - 'Fase 3 (UI & Feature): Implementar componentes (vía Stitch o Descripción) y conectar a Mocks.'
-    - 'STOP_POINT: Detenerse para VALIDACIÓN VISUAL tras la Fase 3. No continuar sin OK.'
-    - 'Fase 4 (Infrastructure): Tras el OK, implementar Repositorios y Mappers reales.'
-    - 'Commit: <type>(<scope>): <description>.'
+    - 'Phase 1 (Domain): Create pure models and interfaces in libs/contexts/*/domain.'
+    - 'Phase 2 (Application): Create Facades and Signal Stores with MOCK DATA.'
+    - 'Phase 3 (UI & Feature): Implement components (via Stitch or Description) and connect to mocked Facades.'
+    - 'STOP_POINT: Mandatory stop for VISUAL VALIDATION after Phase 3. Do not proceed without user approval.'
+    - 'Phase 4 (Infrastructure): After approval, implement real Repositories, Mappers (Streams to Signals), and Supabase integration.'
+    - 'Quality: Every logic task requires a co-located .spec.ts file using @testing-library/angular.'
+    - "Commit: Use format '<type>(<scope>): <description>'."
