@@ -1,82 +1,78 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# H.E.R.O — Official OPSX Configuration
+# H.E.R.O — Official OPSX Configuration (Full Master Version)
 # High Performance Event Result Organizer
 # ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
 
-# ── Global Context (Inyectado en cada prompt del agente) ──────────────────────
+# ── Global Context (Inyectado íntegramente en cada prompt) ────────────────────
 context: |
   Project: H.E.R.O. (High Performance Event Result Organizer).
+  Identity: Real-time competition management for CrossFit/Hyrox. Offline-first.
   Deadline: 2026-04-11 (Demo BOX Madrid).
 
-  Stack Tecnológico:
-  - NX Monorepo, Angular 21 (Standalone, Signals, inject(), OnPush).
-  - State: @ngrx/signals (Signal Store).
-  - Styling: Tailwind CSS v4.
-  - Backend: Supabase (PostgreSQL 17.6).
-  - Testing: Vitest + Angular Testing Library.
+  Apps Definition:
+  - admin: [apps/admin] Angular 21, Desktop/Tablet.
+  - judge: [apps/judge] Angular 21 PWA, Mobile, Offline-first.
+  - leaderboard: [apps/leaderboard] Astro 4, TV/Projector.
 
-  Arquitectura (Hexagonal + DDD):
-  - domain: Modelos puros e interfaces. Cero dependencias.
-  - application: Facades y Signal Stores. Gestiona el estado.
-  - infrastructure: Repositorios Supabase y Mappers (Streams a Signals).
-  - feature: Páginas de Angular, Resolvers funcionales y Providers.
-  - ui: Componentes "dumb" presentacionales (Stitch-driven).
+  Tech Stack:
+  - Core: NX Monorepo, Angular 21 (Signals, inject(), OnPush), Tailwind v4.
+  - State: @ngrx/signals. Styling: Tailwind v4 (CSS-first).
+  - Database: Supabase (ID: blgssvpsobfpfxghigca, Region: eu-west-3).
+  - Hosting: Vercel. Build: NX. Testing: Vitest + Angular Testing Library.
+  - Types: 'libs/types/src/database.types.ts' (via supabase gen types).
 
-  Reglas de Oro:
-  - Los componentes SOLO llaman a Facades o Signal Stores. Prohibido acceso a Repositorios.
-  - Inyección: Exclusivamente mediante inject(). Prohibidos constructores.
-  - Reactividad: Uso de input(), output() y computed(). No RxJS en componentes.
+  Architecture (DDD + Hexagonal):
+  - domain: Models, Value Objects, pure helpers. Zero dependencies.
+  - application: Facade + Signal Store. Depends only on domain.
+  - infrastructure: Repository interface + InjectionToken + Supabase impl + Mapper.
+  - feature: Pages, Resolvers, Providers (provideXContext()).
+  - ui: Dumb components. Types from domain only.
+  - Direction: apps → feature → application → domain | infrastructure → domain.
+  - Flow: Component → Store → Facade → Repo Interface → SupabaseRepo → SDK.
+
+  Database Schemas:
+  - Tables: events, categories, levels, wods, wod_level_configs, athletes, heats, heat_athletes, scores, score_stations, profiles.
+  - Realtime: scores, heats. RLS active on all tables.
+
+  Global Rules (NEVER):
+  - No Angular Material, no NgModules, no constructors.
+  - No classic NgRx (actions/reducers/effects), no BehaviorSubject.
+  - No direct Supabase calls outside infrastructure layer.
+  - No 'service_role' key in frontend. No inline style= attributes.
+
+  Testing & Quality:
+  - Coverage: 80% total, 100% domain. Vitest + render() from @testing-library.
+  - Commits: <type>(<scope>): <description>.
+  - Scopes: admin, judge, leaderboard, heat, score, athlete, auth, event, infra, ui, nx.
+
+  Glossary:
+  - WOD: Workout of the Day. AMRAP: As many reps as possible.
+  - For Time: Fast as possible. Heat: Group of athletes.
+  - RX: Prescribed (Standard). Scaled: Modified difficulty.
 
 # ── Rules by Artifact (Instrucciones de flujo OPSX) ───────────────────────────
 rules:
   proposal:
-    - "Git Action: Crear automáticamente la rama 'feature/<scope>-<short-description>' antes de redactar el proposal."
-    - 'Stitch Check: Verificar si el servidor MCP de Stitch está activo para acceder al diseño visual.'
-    - 'Scope: Definir contextos delimitados afectados (auth, heat, score, athlete, event).'
+    - "Git: Crear automáticamente la rama 'feature/<scope>-<description>' antes de empezar."
+    - 'Stitch: Verificar disponibilidad de MCP/Stitch antes de definir la UI.'
+    - 'Scope: Definir contextos delimitados afectados y out-of-scope.'
 
   specs:
     - 'Format: Requerimientos funcionales en GIVEN/WHEN/THEN.'
-    - 'Terminology: Respetar glosario (WOD, AMRAP, For Time, Heat, RX, Scaled).'
-    - 'UX: Garantizar touch targets de 48x48px para la App de Jueces.'
+    - 'UX: Touch targets de 48x48px para la App de Jueces.'
+    - 'Offline: Definir comportamiento de red fallida para la app de jueces.'
 
   design:
-    - 'Descomponetización: El agente DEBE listar todos los componentes UI (Dumb) y Feature necesarios a partir del diseño en Stitch/MCP.'
-    - 'Layering: Definir primero la interfaz en Domain y la lógica de estado en Application antes que la UI.'
-    - 'Mock Strategy: Especificar el uso de datos estáticos (stubs) para la fase inicial de implementación.'
-    - 'MCP Sync: Consultar Design Tokens y mapeo de señales (Signals) desde el servidor MCP de Stitch.'
+    - 'Descomponetización: Listar Dumb Components (UI), Smart Components (Feature) y Domain Models basándose en el MCP de Stitch.'
+    - 'Layering: Validar dependencias (Feature -> Application -> Domain).'
+    - 'Mock Strategy: Definir stubs de datos estáticos para las fases iniciales.'
+    - 'MCP Sync: Extraer Design Tokens y Signals mapeadas desde Stitch.'
 
   tasks:
-    - 'Fase 1 (Domain): Crear modelos y tipos en libs/contexts/*/domain.'
-    - 'Fase 2 (Application): Crear Facades y Signal Stores con datos MOCK.'
-    - 'Fase 3 (Feature & UI): Crear componentes (usando MCP de Stitch) e integrarlos con las Facades mockeadas.'
-    - 'Checkpoint Visual: Al finalizar la Fase 3, el agente debe detenerse y pedir validación visual del usuario en el navegador.'
-    - 'Fase 4 (Infrastructure): Tras la validación, implementar Repositorios reales, Mappers y llamadas a Supabase.'
-    - 'Quality: Cada tarea de lógica debe incluir su archivo .spec.ts co-localizado.'
-
-# ── Commits & Scopes ──────────────────────────────────────────────────────────
-commits:
-  types: [feat, fix, refactor, test, chore]
-  scopes:
-    [
-      admin,
-      judge,
-      leaderboard,
-      heat,
-      score,
-      athlete,
-      auth,
-      event,
-      infra,
-      ui,
-      nx,
-    ]
-
-# ── Glosario de Dominio ───────────────────────────────────────────────────────
-glossary:
-  WOD: 'Workout of the Day'
-  AMRAP: 'As Many Reps As Possible (higher_is_better)'
-  For Time: 'Completar en el menor tiempo posible (lower_is_better)'
-  Heat: 'Grupo de atletas compitiendo simultáneamente'
-  RX: 'Nivel estándar de dificultad'
-  Scaled: 'Nivel adaptado de dificultad'
+    - 'Fase 1 (Domain): Crear modelos e interfaces puras.'
+    - 'Fase 2 (Application): Crear Facades y Signal Stores con MOCK DATA.'
+    - 'Fase 3 (Feature & UI): Implementar componentes (Stitch/MCP) y conectar a Mocks.'
+    - 'STOP_POINT: Al terminar Fase 3, detenerse obligatoriamente para VALIDACIÓN VISUAL.'
+    - 'Fase 4 (Infrastructure): Tras el OK, implementar Repositorios reales, Mappers (Streams a Signals) e integración con Supabase.'
+    - 'Granularidad: Máximo un archivo por tarea. Incluir siempre el .spec.ts.'
