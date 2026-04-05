@@ -1,78 +1,48 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# H.E.R.O — Official OPSX Configuration (Stitch MCP Guard)
+# H.E.R.O — Official OPSX Project Configuration (Flexible Edition)
 # ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
 
-# ── Global Context (Inyectado íntegramente en cada prompt) ────────────────────
+# ── Global Context (Arquitectura, Stack y Reglas de Oro) ─────────────────────
 context: |
   Project: H.E.R.O. (High Performance Event Result Organizer).
-  Identity: Real-time competition management for CrossFit/Hyrox. Offline-first.
   Deadline: 2026-04-11 (Demo BOX Madrid).
 
-  Apps Definition:
-  - admin: [apps/admin] Angular 21, Desktop/Tablet.
-  - judge: [apps/judge] Angular 21 PWA, Mobile, Offline-first.
-  - leaderboard: [apps/leaderboard] Astro 4, TV/Projector.
+  Stack & Architecture:
+  - NX Monorepo, Angular 21 (Signals, inject(), OnPush), Tailwind v4.
+  - Pattern: Hexagonal/DDD (domain -> application -> feature -> infrastructure).
+  - Database: Supabase. Types in 'libs/types/src/database.types.ts'.
 
-  Tech Stack:
-  - Core: NX Monorepo, Angular 21 (Signals, inject(), OnPush), Tailwind v4.
-  - State: @ngrx/signals. Styling: Tailwind v4 (CSS-first).
-  - Database: Supabase (ID: blgssvpsobfpfxghigca, Region: eu-west-3).
-  - Hosting: Vercel. Build: NX. Testing: Vitest + Angular Testing Library.
-  - Types: 'libs/types/src/database.types.ts' (via supabase gen types).
+  Architectural Guardrails:
+  - Component communication: ONLY via Service Facades/Signal Stores.
+  - Dependency Injection: Use inject() function only. No constructors.
+  - Reactivity: Signal-based inputs/outputs. No RxJS en componentes.
+  - Git: Branches must follow 'feature/<scope>-<description>'.
 
-  Architecture (DDD + Hexagonal):
-  - domain: Models, Value Objects, pure helpers. Zero dependencies.
-  - application: Facade + Signal Store. Depends only on domain.
-  - infrastructure: Repository interface + InjectionToken + Supabase impl + Mapper.
-  - feature: Pages, Resolvers, Providers (provideXContext()).
-  - ui: Dumb components. Types from domain only.
-  - Direction: apps → feature → application → domain | infrastructure → domain.
-  - Flow: Component → Store → Facade → Repo Interface → SupabaseRepo → SDK.
+  Glossary: WOD, AMRAP, For Time, Heat, RX, Scaled, Bib Number.
 
-  Database Schemas:
-  - Tables: events, categories, levels, wods, wod_level_configs, athletes, heats, heat_athletes, scores, score_stations, profiles.
-  - Realtime: scores, heats. RLS active on all tables.
-
-  Global Rules (NEVER):
-  - No Angular Material, no NgModules, no constructors.
-  - No classic NgRx (actions/reducers/effects), no BehaviorSubject.
-  - No direct Supabase calls outside infrastructure layer.
-  - No 'service_role' key in frontend. No inline style= attributes.
-
-  Testing & Quality:
-  - Coverage: 80% total, 100% domain. Vitest + render() from @testing-library.
-  - Commits: <type>(<scope>): <description>.
-  - Scopes: admin, judge, leaderboard, heat, score, athlete, auth, event, infra, ui, nx.
-
-  Glossary:
-  - WOD: Workout of the Day. AMRAP: As many reps as possible.
-  - For Time: Fast as possible. Heat: Group of athletes.
-  - RX: Prescribed (Standard). Scaled: Modified difficulty.
-
-# ── Rules by Artifact (Instrucciones de flujo OPSX) ───────────────────────────
+# ── Rules by Artifact (Instrucciones de Flujo OPSX) ──────────────────────────
 rules:
   proposal:
-    - "Git: Crear automáticamente la rama 'feature/<scope>-<description>' antes de empezar."
-    - "MANDATORY QUESTION: El agente DEBE preguntar explícitamente: '¿Tienes el servidor MCP de Stitch activo y conectado para este diseño?' antes de redactar el proposal."
-    - 'Check: Si el usuario responde que NO, el agente debe avisar que no podrá garantizar la fidelidad visual de la capa UI.'
-    - 'Scope: Definir contextos delimitados afectados y out-of-scope.'
+    - "Git: Crear rama 'feature/<scope>-<description>' antes de empezar."
+    - 'STITCH/DESCRIPTION EVALUATION: El agente debe evaluar la naturaleza del cambio:'
+    - "1. Si es un desarrollo de pantalla nueva o rediseño complejo y NO hay bloque '## Stitch Instructions': PREGUNTAR por los IDs de Stitch."
+    - '2. Si el cambio es una mejora lógica, ajuste de infraestructura o un cambio visual descrito detalladamente por el usuario: PROCEDER usando la descripción de texto como fuente de verdad.'
+    - 'Action: Si se proporcionan IDs de Stitch, usar el MCP para descargar imágenes y código fuente (curl -L).'
 
   specs:
-    - 'Format: Requerimientos funcionales en GIVEN/WHEN/THEN.'
-    - 'UX: Touch targets de 48x48px para la App de Jueces.'
-    - 'Offline: Definir comportamiento de red fallida para la app de jueces.'
+    - 'Format: GIVEN/WHEN/THEN. UX: Touch targets 48x48px (Judge App).'
 
   design:
-    - 'MCP Sync: Si el MCP está activo, el agente DEBE realizar una consulta al servidor Stitch para extraer Design Tokens y el mapeo de Signals antes de descomponetizar.'
-    - 'Descomponetización: Listar Dumb Components (UI), Smart Components (Feature) y Domain Models basándose en la información de Stitch.'
-    - 'Layering: Validar dependencias (Feature -> Application -> Domain).'
+    - 'Decomposition: Listar Dumb Components (UI), Smart Components (Feature) y Domain Models.'
+    - 'Si hay Stitch: Usar los tokens y estructura visual del diseño.'
+    - 'Si es por Descripción: El agente debe proponer una estructura visual coherente con Tailwind v4 basada en el texto del usuario.'
     - 'Mock Strategy: Definir stubs de datos estáticos para las fases iniciales.'
 
   tasks:
-    - 'Fase 1 (Domain): Crear modelos e interfaces puras.'
-    - 'Fase 2 (Application): Crear Facades y Signal Stores con MOCK DATA.'
-    - 'Fase 3 (Feature & UI): Implementar componentes (Stitch/MCP) y conectar a Mocks.'
-    - 'STOP_POINT: Al terminar Fase 3, detenerse obligatoriamente para VALIDACIÓN VISUAL. No continuar sin OK explícito.'
-    - 'Fase 4 (Infrastructure): Tras el OK, implementar Repositorios reales, Mappers (Streams a Signals) e integración con Supabase.'
-    - 'Granularidad: Máximo un archivo por tarea. Incluir siempre el .spec.ts.'
+    - 'Fase 1 (Domain): Modelos e interfaces puras.'
+    - 'Fase 2 (Application): Stores con MOCK DATA.'
+    - 'Fase 3 (UI & Feature): Implementar componentes (vía Stitch o Descripción) y conectar a Mocks.'
+    - 'STOP_POINT: Detenerse para VALIDACIÓN VISUAL tras la Fase 3. No continuar sin OK.'
+    - 'Fase 4 (Infrastructure): Tras el OK, implementar Repositorios y Mappers reales.'
+    - 'Commit: <type>(<scope>): <description>.'
