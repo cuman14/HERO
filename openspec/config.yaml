@@ -1,50 +1,82 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# H.E.R.O — OpenSpec Configuration (OPSX Standard)
+# H.E.R.O — Official OPSX Configuration
 # High Performance Event Result Organizer
 # ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
 
+# ── Global Context (Inyectado en cada prompt del agente) ──────────────────────
 context: |
-  Project: H.E.R.O (High Performance Event Result Organizer).
+  Project: H.E.R.O. (High Performance Event Result Organizer).
   Deadline: 2026-04-11 (Demo BOX Madrid).
 
-  Tech Stack:
-  - Monorepo NX con Angular 21 (Standalone, Signals, inject()).
-  - State: @ngrx/signals (Component Store / Facade).
+  Stack Tecnológico:
+  - NX Monorepo, Angular 21 (Standalone, Signals, inject(), OnPush).
+  - State: @ngrx/signals (Signal Store).
   - Styling: Tailwind CSS v4.
-  - Backend: Supabase (PostgreSQL 17.6) con RLS activo.
+  - Backend: Supabase (PostgreSQL 17.6).
   - Testing: Vitest + Angular Testing Library.
 
-  Architecture (DDD + Hexagonal):
-  - domain: Modelos puros, interfaces y tipos de base de datos.
-  - application: Facades y Signal Stores. Depende solo de domain.
-  - infrastructure: Repositorios e implementaciones de Supabase.
-  - feature: Componentes de página, Resolvers y Providers.
-  - ui: Componentes "dumb" (presentacionales) con OnPush.
+  Arquitectura (Hexagonal + DDD):
+  - domain: Modelos puros e interfaces. Cero dependencias.
+  - application: Facades y Signal Stores. Gestiona el estado.
+  - infrastructure: Repositorios Supabase y Mappers (Streams a Signals).
+  - feature: Páginas de Angular, Resolvers funcionales y Providers.
+  - ui: Componentes "dumb" presentacionales (Stitch-driven).
 
+  Reglas de Oro:
+  - Los componentes SOLO llaman a Facades o Signal Stores. Prohibido acceso a Repositorios.
+  - Inyección: Exclusivamente mediante inject(). Prohibidos constructores.
+  - Reactividad: Uso de input(), output() y computed(). No RxJS en componentes.
+
+# ── Rules by Artifact (Instrucciones de flujo OPSX) ───────────────────────────
 rules:
   proposal:
-    - 'Indicar siempre los contextos delimitados (Bounded Contexts) afectados.'
-    - 'Declarar explícitamente qué queda fuera del alcance (out-of-scope).'
+    - "Git Action: Crear automáticamente la rama 'feature/<scope>-<short-description>' antes de redactar el proposal."
+    - 'Stitch Check: Verificar si el servidor MCP de Stitch está activo para acceder al diseño visual.'
+    - 'Scope: Definir contextos delimitados afectados (auth, heat, score, athlete, event).'
 
   specs:
-    - 'Criterios de aceptación en formato GIVEN/WHEN/THEN.'
-    - 'Respetar el glosario técnico (WOD, AMRAP, For Time, Heat, RX/Scaled).'
+    - 'Format: Requerimientos funcionales en GIVEN/WHEN/THEN.'
+    - 'Terminology: Respetar glosario (WOD, AMRAP, For Time, Heat, RX, Scaled).'
+    - 'UX: Garantizar touch targets de 48x48px para la App de Jueces.'
 
   design:
-    - "Component Isolation: Los componentes de la capa 'feature' solo pueden interactuar con Service Facades o Signal Stores. Queda estrictamente prohibido el acceso directo a Repositorios o SDK de Supabase desde los componentes."
-    - 'Data Pre-fetching: Usar Functional Resolvers (ResolveFn) para toda carga de datos vinculada a rutas. Esto asegura que los componentes OnPush reciban la data mediante el input binding o el ActivatedRoute sin parpadeos de UI (flicker).'
-    - "Reactive Data Flow: Los Mappers en 'infrastructure' deben transformar Streams de Supabase Realtime en Signals antes de entregarlos a la capa de aplicación."
-    - 'Inyección: Usar exclusivamente la función inject(). Prohibido el uso de constructores.'
-    - 'Prohibido el uso de Angular Material o NgModules.'
+    - 'Descomponetización: El agente DEBE listar todos los componentes UI (Dumb) y Feature necesarios a partir del diseño en Stitch/MCP.'
+    - 'Layering: Definir primero la interfaz en Domain y la lógica de estado en Application antes que la UI.'
+    - 'Mock Strategy: Especificar el uso de datos estáticos (stubs) para la fase inicial de implementación.'
+    - 'MCP Sync: Consultar Design Tokens y mapeo de señales (Signals) desde el servidor MCP de Stitch.'
 
   tasks:
-    - 'Cada tarea de lógica debe generar su correspondiente .spec.ts co-localizado.'
-    - 'Granularidad: Máximo un archivo por tarea. Si supera las 100 líneas, dividir.'
-    - 'Commits: <type>(<scope>): <description>.'
+    - 'Fase 1 (Domain): Crear modelos y tipos en libs/contexts/*/domain.'
+    - 'Fase 2 (Application): Crear Facades y Signal Stores con datos MOCK.'
+    - 'Fase 3 (Feature & UI): Crear componentes (usando MCP de Stitch) e integrarlos con las Facades mockeadas.'
+    - 'Checkpoint Visual: Al finalizar la Fase 3, el agente debe detenerse y pedir validación visual del usuario en el navegador.'
+    - 'Fase 4 (Infrastructure): Tras la validación, implementar Repositorios reales, Mappers y llamadas a Supabase.'
+    - 'Quality: Cada tarea de lógica debe incluir su archivo .spec.ts co-localizado.'
 
+# ── Commits & Scopes ──────────────────────────────────────────────────────────
+commits:
+  types: [feat, fix, refactor, test, chore]
+  scopes:
+    [
+      admin,
+      judge,
+      leaderboard,
+      heat,
+      score,
+      athlete,
+      auth,
+      event,
+      infra,
+      ui,
+      nx,
+    ]
+
+# ── Glosario de Dominio ───────────────────────────────────────────────────────
 glossary:
   WOD: 'Workout of the Day'
   AMRAP: 'As Many Reps As Possible (higher_is_better)'
-  For Time: 'Complete fast (lower_is_better)'
+  For Time: 'Completar en el menor tiempo posible (lower_is_better)'
   Heat: 'Grupo de atletas compitiendo simultáneamente'
+  RX: 'Nivel estándar de dificultad'
+  Scaled: 'Nivel adaptado de dificultad'
