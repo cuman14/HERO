@@ -1,190 +1,50 @@
-# ─────────────────────────────────────────────
-# H.E.R.O — OpenSpec Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# H.E.R.O — OpenSpec Configuration (OPSX Standard)
 # High Performance Event Result Organizer
-# ─────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
-version: '1.0'
-editor: windsurf
 
-# ── Project identity ──────────────────────────
-project:
-  name: H.E.R.O
-  full_name: High Performance Event Result Organizer
-  description: >
-    Real-time competition management platform for CrossFit and Hyrox events.
-    Eliminates latency between judges and the public while guaranteeing
-    data integrity in low-connectivity environments.
-  deadline: 2026-04-11
-  demo: BOX Madrid
+context: |
+  Project: H.E.R.O (High Performance Event Result Organizer).
+  Deadline: 2026-04-11 (Demo BOX Madrid).
 
-# ── Apps ──────────────────────────────────────
-apps:
-  admin:
-    path: apps/admin
-    stack: Angular 21
-    accent: blue # #3b82f6
-    target: Desktop / Tablet
-  judge:
-    path: apps/judge
-    stack: Angular 21 PWA
-    accent: violet # #8b5cf6
-    target: Mobile — offline-first
-  leaderboard:
-    path: apps/leaderboard
-    stack: Astro 4
-    accent: emerald # #10b981
-    target: TV / Projector
+  Tech Stack:
+  - Monorepo NX con Angular 21 (Standalone, Signals, inject()).
+  - State: @ngrx/signals (Component Store / Facade).
+  - Styling: Tailwind CSS v4.
+  - Backend: Supabase (PostgreSQL 17.6) con RLS activo.
+  - Testing: Vitest + Angular Testing Library.
 
-# ── Tech stack ────────────────────────────────
-stack:
-  frontend: Angular 21
-  state: '@ngrx/signals'
-  styling: Tailwind CSS v4
-  icons: Heroicons
-  backend: Supabase
-  database: PostgreSQL 17.6
-  hosting: Vercel
-  build: NX Monorepo
-  testing: Vitest + Angular Testing Library
+  Architecture (DDD + Hexagonal):
+  - domain: Modelos puros, interfaces y tipos de base de datos.
+  - application: Facades y Signal Stores. Depende solo de domain.
+  - infrastructure: Repositorios e implementaciones de Supabase.
+  - feature: Componentes de página, Resolvers y Providers.
+  - ui: Componentes "dumb" (presentacionales) con OnPush.
 
-# ── Architecture ──────────────────────────────
-architecture:
-  pattern: DDD + Hexagonal
-  structure: Bounded Contexts
-  contexts_path: libs/contexts/
-  contexts:
-    - auth
-    - heat
-    - score
-    - athlete
-    - event
-
-  context_layers:
-    domain: 'Models (interfaces/types), Value Objects, pure helpers. Zero dependencies.'
-    application: 'Facade + Signal Store. Depends only on domain.'
-    infrastructure: 'Repository interface + InjectionToken + Supabase impl + Mapper.'
-    feature: 'Pages, Resolvers, Providers (provideXContext()).'
-    ui: 'Dumb components. No business logic. Types from domain only.'
-
-  dependency_direction:
-    - 'apps/* → feature → application → domain'
-    - 'infrastructure → domain'
-    - 'ui → domain (typing only)'
-    - 'NEVER: domain → application'
-    - 'NEVER: application → infrastructure (only via InjectionToken)'
-    - 'NEVER: component → repository (direct)'
-
-  code_flow: 'Component → Signal Store → Facade → Repository Interface → SupabaseRepository → SDK → PostgreSQL'
-
-# ── Database ──────────────────────────────────
-database:
-  project_id: blgssvpsobfpfxghigca
-  region: eu-west-3
-  url: https://blgssvpsobfpfxghigca.supabase.co
-  realtime_tables:
-    - scores
-    - heats
-  tables:
-    - events
-    - categories
-    - levels
-    - wods
-    - wod_level_configs
-    - athletes
-    - heats
-    - heat_athletes
-    - scores
-    - score_stations
-    - profiles
-  rls: active on all tables
-  types_command: 'supabase gen types typescript --project-id blgssvpsobfpfxghigca > libs/types/src/database.types.ts'
-
-# ── Rules injected into every artifact ────────
 rules:
-  always:
-    - 'The product is always called H.E.R.O. Never ScoreApp, never score-app.'
-    - 'Angular components: standalone: true, ChangeDetectionStrategy.OnPush, inject(), protected visibility.'
-    - 'Signal inputs: input<T>(). Signal outputs: output<T>(). Never @Input() / @Output().'
-    - 'Supabase queries ONLY in libs/contexts/*/infrastructure/. Never in stores, facades, or components.'
-    - 'State management: @ngrx/signals only. No NgRx classic, no BehaviorSubject, no RxJS in UI.'
-    - 'Styling: Tailwind v4 CSS-first only. No Angular Material. No inline style= attributes.'
-    - 'All components have a co-located .spec.ts file.'
-    - 'Tests use behavior assertions, not implementation details.'
+  proposal:
+    - 'Indicar siempre los contextos delimitados (Bounded Contexts) afectados.'
+    - 'Declarar explícitamente qué queda fuera del alcance (out-of-scope).'
 
-  never:
-    - 'Angular Material'
-    - 'NgRx Store (classic actions/reducers/effects)'
-    - 'Constructor injection'
-    - 'NgModules'
-    - 'Inline style= attributes'
-    - 'Direct Supabase calls outside infrastructure layer'
-    - 'service_role key in any frontend code'
+  specs:
+    - 'Criterios de aceptación en formato GIVEN/WHEN/THEN.'
+    - 'Respetar el glosario técnico (WOD, AMRAP, For Time, Heat, RX/Scaled).'
 
-  judge_ui_specific:
-    - 'Touch targets minimum 48x48px on ALL interactive elements.'
-    - 'Offline-first: heats cached in localStorage, scores queued on network failure.'
-    - 'Maximum 3 steps to submit a score.'
-    - 'Numpad input response < 100ms.'
-    - 'Direct total input — no increment buttons.'
+  design:
+    - "Component Isolation: Los componentes de la capa 'feature' solo pueden interactuar con Service Facades o Signal Stores. Queda estrictamente prohibido el acceso directo a Repositorios o SDK de Supabase desde los componentes."
+    - 'Data Pre-fetching: Usar Functional Resolvers (ResolveFn) para toda carga de datos vinculada a rutas. Esto asegura que los componentes OnPush reciban la data mediante el input binding o el ActivatedRoute sin parpadeos de UI (flicker).'
+    - "Reactive Data Flow: Los Mappers en 'infrastructure' deben transformar Streams de Supabase Realtime en Signals antes de entregarlos a la capa de aplicación."
+    - 'Inyección: Usar exclusivamente la función inject(). Prohibido el uso de constructores.'
+    - 'Prohibido el uso de Angular Material o NgModules.'
 
-  testing:
-    coverage_gate: 80
-    domain_target: 100
-    tools:
-      domain: Vitest
-      application: Vitest
-      infrastructure: 'Vitest + Supabase mock'
-      components: 'Vitest'
-    rules:
-      - 'One describe per unit. One it per behavior.'
-      - 'Use render() and screen.* queries from @testing-library/angular.'
-      - 'Mock via { provide: Token, useValue: mock }. Never spyOn domain logic.'
+  tasks:
+    - 'Cada tarea de lógica debe generar su correspondiente .spec.ts co-localizado.'
+    - 'Granularidad: Máximo un archivo por tarea. Si supera las 100 líneas, dividir.'
+    - 'Commits: <type>(<scope>): <description>.'
 
-  commits:
-    format: '<type>(<scope>): <description>'
-    types: [feat, fix, refactor, test, chore, docs, perf, style]
-    scopes:
-      [
-        admin,
-        judge,
-        leaderboard,
-        heat,
-        score,
-        athlete,
-        auth,
-        event,
-        infra,
-        ui,
-        nx,
-      ]
-    examples:
-      - 'feat(judge): add numpad score input page'
-      - 'test(heat): add unit tests for heat-list store'
-      - 'fix(infra): handle supabase realtime reconnection'
-
-# ── Proposal template hints ───────────────────
-proposal_hints:
-  always_include:
-    - Affected bounded context(s)
-    - Explicit out-of-scope declaration
-    - Acceptance criteria in GIVEN/WHEN/THEN
-    - Offline behavior if feature is in judge app
-    - Touch target requirement if interactive elements exist
-
-  task_granularity: >
-    One file per task maximum. If a task generates more than 100 lines,
-    split it. Always include the .spec.ts creation as a separate task.
-
-# ── Domain terminology ────────────────────────
 glossary:
-  WOD: 'Workout of the Day — a competition exercise'
-  AMRAP: 'As Many Reps As Possible — WOD type (higher_is_better)'
-  For Time: 'Complete movements as fast as possible (lower_is_better)'
-  Max Weight: 'Lift the heaviest weight (higher_is_better)'
-  Heat: 'A group of athletes competing simultaneously'
-  Bib Number: 'Athlete race number (dorsal)'
-  RX: 'As prescribed — standard difficulty level'
-  Scaled: 'Modified — reduced difficulty level'
-  Elite: 'Competition — hardest difficulty level'
-  Tiebreak: 'Secondary criterion when scores are equal'
-  Judge: 'Person who counts reps and submits scores'
+  WOD: 'Workout of the Day'
+  AMRAP: 'As Many Reps As Possible (higher_is_better)'
+  For Time: 'Complete fast (lower_is_better)'
+  Heat: 'Grupo de atletas compitiendo simultáneamente'
