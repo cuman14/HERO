@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# H.E.R.O — Official OPSX Project Configuration (Flexible Edition)
+# H.E.R.O — Official OPSX Project Configuration
 # ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
 
@@ -19,17 +19,17 @@ context: |
   - State Management: @ngrx/signals. Styling: Tailwind v4 (CSS-first).
   - Database: Supabase (ID: blgssvpsobfpfxghigca, Region: eu-west-3).
   - Types: 'libs/types/src/database.types.ts' (via supabase gen types).
-  - Testing: Vitest + Angular Testing Library.
 
   Architecture (DDD + Hexagonal):
   - domain: Pure models, Value Objects, helpers. Zero dependencies.
-  - application: Facade + Signal Store. Depends only on domain.
+  - application: Facade + Signal Store.
   - infrastructure: Repository implementation + Supabase SDK + Mappers.
   - feature: Pages, Resolvers, Providers.
-  - ui: Dumb components. Styles from Stitch/Tailwind. Types from domain only.
-  - Flow: Component → Signal Store → Facade → Repo Interface → Supabase Implementation.
+  - ui: Dumb components.
 
   Architectural Guardrails (ALWAYS FOLLOW):
+  - Naming Conventions: NO CONTRACTIONS or abbreviations in file names or variable names.
+    (e.g., use 'repetition' instead of 'rep', 'configuration' instead of 'config', 'information' instead of 'info').
   - Component communication: ONLY via Service Facades or Signal Stores. No direct Repo access.
   - Dependency Injection: Use inject() function only. Strictly no constructors.
   - Reactivity: Use signal-based input(), output(), and computed(). No RxJS in components.
@@ -42,7 +42,7 @@ context: |
 # ── Rules by Artifact (OPSX Workflow Instructions) ──────────────────────────
 rules:
   proposal:
-    - "Git Action: Automatically create the branch 'feature/<scope>-<description>' before drafting the proposal."
+    - "Git Action: MANDATORY. Create the branch 'feature/<scope>-<description>' before drafting the proposal."
     - 'STITCH/DESCRIPTION EVALUATION: The agent must evaluate the nature of the change:'
     - "1. If it is a new screen or complex UI redesign and NO '## Stitch Instructions' block is provided: MANDATORY STOP and ask for Stitch Project/Screen IDs."
     - '2. If the change is a logic improvement, infrastructure fix, or a UI change described in detail via text: PROCEED using the text description as the source of truth.'
@@ -51,19 +51,17 @@ rules:
   specs:
     - 'Format: Functional requirements in GIVEN/WHEN/THEN format.'
     - 'UX: Minimum 48x48px touch targets for all interactive elements in the Judge App.'
-    - 'Offline: Define behavior for network failure scenarios (local queueing/syncing).'
 
   design:
     - 'Decomposition: Explicitly list: 1. Dumb Components (UI), 2. Smart Components (Feature), 3. Domain Models.'
-    - 'If Stitch is used: Adopt Design Tokens and visual structure directly from the design.'
-    - 'If Text-based: Propose a visual structure consistent with Tailwind v4 based on the description.'
+    - "Naming: Verify that all proposed file names and variables follow the 'no contractions' rule."
     - 'Mock Strategy: Define static data stubs for the initial implementation phases.'
 
   tasks:
-    - 'Phase 1 (Domain): Create pure models and interfaces in libs/contexts/*/domain.'
+    - "Naming: Ensure all files and variables are created WITHOUT contractions (e.g., 'repetition-counter.component.ts')."
+    - 'Phase 1 (Domain): Create pure models and interfaces.'
     - 'Phase 2 (Application): Create Facades and Signal Stores with MOCK DATA.'
     - 'Phase 3 (UI & Feature): Implement components (via Stitch or Description) and connect to mocked Facades.'
     - 'STOP_POINT: Mandatory stop for VISUAL VALIDATION after Phase 3. Do not proceed without user approval.'
-    - 'Phase 4 (Infrastructure): After approval, implement real Repositories, Mappers (Streams to Signals), and Supabase integration.'
-    - 'Quality: Every logic task requires a co-located .spec.ts file using @testing-library/angular.'
-    - "Commit: Use format '<type>(<scope>): <description>'."
+    - 'Phase 4 (Infrastructure): After approval, implement real Repositories and Supabase integration.'
+    - 'Quality: Every logic task requires a co-located .spec.ts file.'
