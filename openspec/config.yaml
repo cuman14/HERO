@@ -1,6 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# H.E.R.O — Official OPSX Configuration (Full Master Version)
-# High Performance Event Result Organizer
+# H.E.R.O — Official OPSX Configuration (Stitch MCP Guard)
 # ─────────────────────────────────────────────────────────────────────────────
 schema: spec-driven
 
@@ -55,7 +54,8 @@ context: |
 rules:
   proposal:
     - "Git: Crear automáticamente la rama 'feature/<scope>-<description>' antes de empezar."
-    - 'Stitch: Verificar disponibilidad de MCP/Stitch antes de definir la UI.'
+    - "MANDATORY QUESTION: El agente DEBE preguntar explícitamente: '¿Tienes el servidor MCP de Stitch activo y conectado para este diseño?' antes de redactar el proposal."
+    - 'Check: Si el usuario responde que NO, el agente debe avisar que no podrá garantizar la fidelidad visual de la capa UI.'
     - 'Scope: Definir contextos delimitados afectados y out-of-scope.'
 
   specs:
@@ -64,15 +64,15 @@ rules:
     - 'Offline: Definir comportamiento de red fallida para la app de jueces.'
 
   design:
-    - 'Descomponetización: Listar Dumb Components (UI), Smart Components (Feature) y Domain Models basándose en el MCP de Stitch.'
+    - 'MCP Sync: Si el MCP está activo, el agente DEBE realizar una consulta al servidor Stitch para extraer Design Tokens y el mapeo de Signals antes de descomponetizar.'
+    - 'Descomponetización: Listar Dumb Components (UI), Smart Components (Feature) y Domain Models basándose en la información de Stitch.'
     - 'Layering: Validar dependencias (Feature -> Application -> Domain).'
     - 'Mock Strategy: Definir stubs de datos estáticos para las fases iniciales.'
-    - 'MCP Sync: Extraer Design Tokens y Signals mapeadas desde Stitch.'
 
   tasks:
     - 'Fase 1 (Domain): Crear modelos e interfaces puras.'
     - 'Fase 2 (Application): Crear Facades y Signal Stores con MOCK DATA.'
     - 'Fase 3 (Feature & UI): Implementar componentes (Stitch/MCP) y conectar a Mocks.'
-    - 'STOP_POINT: Al terminar Fase 3, detenerse obligatoriamente para VALIDACIÓN VISUAL.'
+    - 'STOP_POINT: Al terminar Fase 3, detenerse obligatoriamente para VALIDACIÓN VISUAL. No continuar sin OK explícito.'
     - 'Fase 4 (Infrastructure): Tras el OK, implementar Repositorios reales, Mappers (Streams a Signals) e integración con Supabase.'
     - 'Granularidad: Máximo un archivo por tarea. Incluir siempre el .spec.ts.'
