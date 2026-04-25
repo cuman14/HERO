@@ -74,6 +74,8 @@ Do not invent specific component names or fixed feature lists — the product is
 
 Conventional Commits. Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `style`. Scopes: `admin`, `judge`, `leaderboard`, `domain`, `infra`, `ui`, `nx`.
 
+Keep commit messages short — single line, imperative, ≤ 72 chars. No body unless strictly necessary.
+
 ## PR checklist
 
 - `nx affected -t lint test typecheck build` passes.
