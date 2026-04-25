@@ -4,5 +4,14 @@
   "sourceRoot": "libs/contexts/score/src",
   "projectType": "library",
   "tags": [],
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../../coverage/libs/contexts/score"
+      }
+    }
+  }
 }

@@ -4,12 +4,55 @@
 @import "../../../libs/ui/src/theme/hero.css";
 
 @theme {
-  --color-primary: var(--color-judge-primary);
+  /* Override primary with judge violet */
+  --color-primary: #8b5cf6;
+
+  /* Stitch design system tokens */
+  --color-background: #f8fafc;
+  --color-surface: #f8fafc;
+  --color-on-background: #0f172a;
+  --color-on-surface: #0f172a;
+  --color-on-surface-variant: #64748b;
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #ffffff;
+  --color-on-tertiary: #ffffff;
+  --color-secondary: #334155;
+  --color-tertiary: #f59e0b;
+  --color-error: #dc2626;
+  --color-outline: #cbd5e1;
+  --color-outline-variant: #e2e8f0;
+  --color-surface-container-low: #f1f5f9;
+  --color-surface-container: #f8fafc;
+  --color-surface-container-high: #ffffff;
+  --color-surface-container-highest: #ffffff;
+  --color-surface-dim: #e2e8f0;
+  --color-surface-bright: #ffffff;
+  --color-surface-tint: #8b5cf6;
+  --color-primary-container: #ede9fe;
+  --color-on-primary-container: #5b21b6;
+  --color-secondary-container: #e2e8f0;
+  --color-on-secondary-container: #0f172a;
+  --color-error-container: #fee2e2;
+  --color-on-error-container: #991b1b;
+  --color-inverse-surface: #1e293b;
+  --color-inverse-primary: #c4b5fd;
+  --color-inverse-on-surface: #f8fafc;
+
+  /* Fonts matching Stitch */
+  --font-headline: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-label: 'Space Grotesk', system-ui, sans-serif;
+
+  /* Border radius matching Stitch */
+  --radius-DEFAULT: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 }
 
 body {
-  background-color: var(--color-hero-bg);
-  color: white;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: 'Inter', system-ui, sans-serif;
   margin: 0;
   padding: 0;
 }
