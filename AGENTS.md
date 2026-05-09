@@ -13,8 +13,9 @@ H.E.R.O — real-time scoring platform for CrossFit / Hyrox. Nx monorepo with 3 
 
 App-specific guides (read on demand when working on that app):
 
+- `apps/judge/AGENTS.md` — Judge Interface (detailed patterns)
 - `docs/admin.md` — Admin Panel
-- `docs/judge.md` — Judge Interface
+- `docs/judge.md` — Judge Interface (product context)
 - `docs/leaderboard.md` — Live Leaderboard
 
 ## Stack
