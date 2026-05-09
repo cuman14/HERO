@@ -18,6 +18,17 @@ App-specific guides (read on demand when working on that app):
 - `docs/judge.md` — Judge Interface (product context)
 - `docs/leaderboard.md` — Live Leaderboard
 
+Design references:
+
+- `DESIGN.md` — Visual design system tokens and guidelines (YAML frontmatter + prose). Source of truth for colors, typography, spacing, shapes, components, and do's/don'ts. Agents MUST read this file before generating or modifying any UI code.
+
+### Stitch Design Project
+
+- **Project ID:** `13066618688962361429`
+- **Design Systems:**
+  - _Velocity Mono_ (`assets/4da4e0fa38de45f999edd03d6dce272e`) — Light theme, judge app. Primary `#8b5cf6`, Inter + Space Grotesk.
+  - _Score Design_ (`assets/14703007728964935566`) — Dark theme, admin/leaderboard. Primary `#1978e5`, Inter.
+
 ## Stack
 
 - **Angular 21** — standalone, signals (`signal`, `computed`, `effect`), signal `input()`/`output()`/`model()`, `inject()`, native control flow (`@if`/`@for`/`@switch`), `OnPush`, Resource API, typed reactive forms.
