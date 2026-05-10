@@ -77,13 +77,9 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Deploy judge to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: team_sMmJmobd92vIBFKdJ2KxbtcE
-          vercel-project-id: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
-          working-directory: dist/apps/judge
-          vercel-args: --prod
+        run: |
+          cd dist/apps/judge
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
 
   deploy-admin:
     name: Deploy admin
@@ -114,13 +110,9 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Deploy admin to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: team_sMmJmobd92vIBFKdJ2KxbtcE
-          vercel-project-id: prj_OhTXf4PmY8OjryOsqEN04KLwi1KW
-          working-directory: dist/apps/admin/browser
-          vercel-args: --prod
+        run: |
+          cd dist/apps/admin/browser
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
 
   deploy-leaderboard:
     name: Deploy leaderboard (Astro)
@@ -151,10 +143,6 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Deploy leaderboard to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: team_sMmJmobd92vIBFKdJ2KxbtcE
-          vercel-project-id: prj_cG7qB4nOaKnCo7PfUBKWJkRXfcSC
-          working-directory: dist/apps/leaderboard
-          vercel-args: --prod
+        run: |
+          cd dist/apps/leaderboard
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
