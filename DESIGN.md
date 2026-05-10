@@ -1,4 +1,5 @@
 ---
+version: alpha
 name: H.E.R.O
 description: Real-time scoring platform for CrossFit & Hyrox competitions
 
@@ -146,9 +147,10 @@ typography:
 rounded:
   none: 0
   sm: 0.25rem
-  md: 0.5rem
-  lg: 0.75rem
-  xl: 1rem
+  DEFAULT: 0.5rem
+  md: 0.75rem
+  lg: 1rem
+  xl: 1.5rem
   2xl: 1.5rem
   full: 9999px
 
@@ -161,19 +163,6 @@ spacing:
   xl: 32px
   2xl: 48px
   section: 64px
-
-elevation:
-  none: 'none'
-  card: '0 1px 3px 0 rgba(0, 0, 0, 0.08)'
-  float: '0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.08)'
-  modal-scrim: 'rgba(0, 0, 0, 0.50)'
-
-motion:
-  score-pop: 'score-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-  rank-up: 'rank-up 0.5s ease-out'
-  fast: '150ms ease-in-out'
-  normal: '250ms ease-in-out'
-  slow: '350ms ease-out'
 
 components:
   # ── Keypad buttons ──────────────────────────────────────────────────────
@@ -359,6 +348,8 @@ The judge interface is dominated by the **scoring keypad**: a 3×4 grid of circu
 
 Admin and leaderboard use a dark canvas (`{colors.dark-background}`) that reduces eye strain for operators running a full-day event. The leaderboard's emerald green (`{colors.board-primary}`) is chosen for TV-distance readability — it has the highest contrast against the dark surface of any brand-adjacent hue.
 
+**Implementation stack:** Tailwind CSS v4 (via `@tailwindcss/vite` + `@tailwindcss/postcss`). All styling is expressed through Tailwind utility classes only — no custom CSS classes, no inline styles. Design tokens above map directly to Tailwind theme variables in `libs/ui/src/theme/hero.css`. Agents generating or modifying UI code must use Tailwind v4 utilities referencing these tokens, never raw hex values.
+
 ## Colors
 
 > **Source:** two Stitch design systems — _Velocity Mono_ (judge, light) and _Score Design_ (admin/leaderboard, dark).
@@ -434,12 +425,25 @@ Full-bleed layout. Content locks at ~1600px with auto margins. `{spacing.section
 
 Elevation is flat in the judge app. Shadows compete with the urgency of score entry — they add visual noise at the exact moment the judge needs clarity. Depth comes from **surface-color contrast**, not z-axis cues.
 
-| Level               | Treatment                                      | Used for                                              |
-| ------------------- | ---------------------------------------------- | ----------------------------------------------------- |
-| Flat                | No shadow, no border                           | All judge surfaces, leaderboard rows                  |
-| `{elevation.card}`  | `0 1px 3px rgba(0,0,0,0.08)`                   | Athlete cards, movement cards (light separation only) |
-| `{elevation.float}` | `0 4px 6px rgba(0,0,0,0.10)`                   | Timer chip, penalty overlay, floating CTAs            |
-| Scrim               | `{elevation.modal-scrim}` = `rgba(0,0,0,0.50)` | Full-screen overlays (confirmation, dispute)          |
+| Level | Treatment                                                                  | Used for                                     |
+| ----- | -------------------------------------------------------------------------- | -------------------------------------------- |
+| Flat  | No shadow, no border                                                       | All judge surfaces, leaderboard rows         |
+| card  | `shadow-[0_1px_3px_0_rgba(0,0,0,0.08)]`                                    | Athlete cards, movement cards                |
+| float | `shadow-[0_4px_6px_-1px_rgba(0,0,0,0.10),0_2px_4px_-2px_rgba(0,0,0,0.08)]` | Timer chip, penalty overlay, floating CTAs   |
+| Scrim | `bg-black/50`                                                              | Full-screen overlays (confirmation, dispute) |
+
+**Elevation tokens** (Tailwind shadow values — not in frontmatter schema, defined here as reference):
+
+- **card:** `shadow-[0_1px_3px_0_rgba(0,0,0,0.08)]` — light card separation.
+- **float:** `shadow-[0_4px_6px_-1px_rgba(0,0,0,0.10),0_2px_4px_-2px_rgba(0,0,0,0.08)]` — timer chip, floating CTAs.
+- **modal-scrim:** `bg-black/50` — overlay behind modals.
+
+**Motion tokens** (Tailwind transition/animation values):
+
+- **fast:** `duration-150 ease-in-out` — button press feedback.
+- **normal:** `duration-250 ease-in-out` — step indicator fill, card state transitions.
+- **slow:** `duration-350 ease-out` — rank-up animation on leaderboard.
+- **score-pop:** custom keyframe `cubic-bezier(0.34, 1.56, 0.64, 1)` 300ms — keypad confirm press.
 
 In dark mode, elevation is surface-color stepping (`dark-background` → `dark-surface` → `dark-border`). Shadows are invisible against dark backgrounds and must not be used.
 
