@@ -73,6 +73,9 @@ jobs:
       - name: Build judge
         run: npx nx build judge --configuration=production
 
+      - name: Install latest Vercel CLI
+        run: npm i -g vercel@latest
+
       - name: Deploy judge to Vercel
         uses: amondnet/vercel-action@v25
         with:
@@ -107,6 +110,9 @@ jobs:
       - name: Build admin
         run: npx nx build admin --configuration=production
 
+      - name: Install latest Vercel CLI
+        run: npm i -g vercel@latest
+
       - name: Deploy admin to Vercel
         uses: amondnet/vercel-action@v25
         with:
@@ -140,6 +146,9 @@ jobs:
 
       - name: Build leaderboard
         run: npx nx build leaderboard
+
+      - name: Install latest Vercel CLI
+        run: npm i -g vercel@latest
 
       - name: Deploy leaderboard to Vercel
         uses: amondnet/vercel-action@v25
