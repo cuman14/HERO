@@ -67,6 +67,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
 
   private unsubscribeRealtime: (() => void) | null = null;
 
+  /** Loads heat data. Pass a `heatAthleteId` to fetch from Supabase; omit to use mock data (dev/demo). */
   loadHeat(heatAthleteId?: string): void {
     this.store.setLoading(true);
     if (!heatAthleteId) {
@@ -223,6 +224,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     );
   }
 
+  /** Sets the repetition count for the current movement to an absolute value. */
   updateRepetitionCount(count: number): void {
     const movement = this.currentMovement();
     if (!movement) return;
@@ -234,6 +236,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     }
   }
 
+  /** Increments the repetition count for the current movement by 1. */
   incrementRepetitionCount(): void {
     const current = this.currentRepetitionCount();
     const movement = this.currentMovement();
@@ -241,6 +244,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.updateRepetitionCount(movement.id, current.increment());
   }
 
+  /** Decrements the repetition count for the current movement by 1 (floor: 0). */
   decrementRepetitionCount(): void {
     const current = this.currentRepetitionCount();
     const movement = this.currentMovement();
@@ -248,6 +252,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.updateRepetitionCount(movement.id, current.decrement());
   }
 
+  /** Confirms the current repetition record, persists via repository (if scoreId available), and navigates to the next movement. */
   submitRepetitionCount(): void {
     const movement = this.currentMovement();
     if (!movement) return;
@@ -272,14 +277,17 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     }
   }
 
+  /** Navigates directly to the movement at the given 0-based index. */
   navigateToMovement(index: number): void {
     this.store.navigateToMovement(index);
   }
 
+  /** Navigates to the next movement if available. */
   navigateNext(): void {
     this.store.navigateNext();
   }
 
+  /** Navigates to the previous movement if available. */
   navigatePrevious(): void {
     this.store.navigatePrevious();
   }

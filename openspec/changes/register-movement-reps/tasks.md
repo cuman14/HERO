@@ -51,22 +51,22 @@
 
 ## 6. Infrastructure Layer - Repositories & Supabase Integration
 
-- [ ] 6.1 Create `libs/core/src/lib/score/infrastructure/repetition-record.repository.ts` with methods: `findByHeatAndMovement()`, `save()`, `subscribe()`
-- [ ] 6.2 Create `libs/core/src/lib/score/infrastructure/movement.repository.ts` with methods: `findByHeat()`, `findById()`
-- [ ] 6.3 Create `libs/core/src/lib/score/infrastructure/mappers/repetition-record.mapper.ts` to map between domain and Supabase models
-- [ ] 6.4 Create `libs/core/src/lib/score/infrastructure/mappers/movement.mapper.ts` to map between domain and Supabase models
-- [ ] 6.5 Update `libs/core/src/lib/score/application/register-repetitions.facade.ts` to use real repositories instead of mock data
-- [ ] 6.6 Implement Supabase real-time subscriptions for repetition count synchronization
-- [ ] 6.7 Create unit tests `libs/core/src/lib/score/infrastructure/repetition-record.repository.spec.ts`
-- [ ] 6.8 Create unit tests `libs/core/src/lib/score/infrastructure/movement.repository.spec.ts`
+- [x] 6.1 Create `libs/contexts/score/src/infrastructure/repetition-record.repository.ts` with methods: `findByHeatAndAthlete()`, `save()`, `subscribe()`
+- [x] 6.2 Create `libs/contexts/score/src/infrastructure/movement.repository.ts` with methods: `findByHeat()`, `findById()`
+- [x] 6.3 Create `libs/contexts/score/src/infrastructure/mappers/repetition-record.mapper.ts` to map between domain and Supabase models
+- [x] 6.4 Create `libs/contexts/score/src/infrastructure/mappers/movement.mapper.ts` to map between domain and Supabase models
+- [x] 6.5 Update `libs/contexts/score/src/application/register-repetitions.facade.ts` to use real repositories (`loadRealData`, `submitRepetitionCount` → `repRecordRepo.save`)
+- [x] 6.6 Implement Supabase real-time subscriptions (`repRecordRepo.subscribe` wired in `loadRealData`, unsubscribed in `ngOnDestroy`)
+- [x] 6.7 Create unit tests `libs/contexts/score/src/infrastructure/repetition-record.repository.supabase.spec.ts`
+- [x] 6.8 Create unit tests `libs/contexts/score/src/infrastructure/movement.repository.supabase.spec.ts`
 
 ## 7. Integration & End-to-End Testing
 
-- [ ] 7.1 Create integration tests for the full flow: load heat → navigate movements → submit rep counts
-- [ ] 7.2 Test real-time synchronization between multiple judge instances
-- [ ] 7.3 Test error handling for network failures and validation errors
-- [ ] 7.4 Test offline-first behavior with Supabase sync
-- [ ] 7.5 Create E2E tests with Playwright for the complete user flow
+- [x] 7.1 Create integration tests for the full flow: load heat → navigate movements → submit rep counts (in register-repetitions.facade.spec.ts — real data integration suite)
+- [ ] 7.2 Test real-time synchronization between multiple judge instances (out of scope for MVP)
+- [x] 7.3 Test error handling for network failures and validation errors (covered in facade integration suite + repo specs)
+- [ ] 7.4 Test offline-first behavior with Supabase sync (out of scope for MVP)
+- [ ] 7.5 Create E2E tests with Playwright for the complete user flow (out of scope for MVP)
 - [ ] 7.6 Verify all accessibility requirements (48x48px touch targets, high contrast, etc.)
 
 ## 8. Documentation & Cleanup
@@ -74,6 +74,6 @@
 - [ ] 8.1 Update `libs/core/README.md` with documentation for the new score domain
 - [ ] 8.2 Update `libs/ui/README.md` with component documentation
 - [ ] 8.3 Add JSDoc comments to all public APIs
-- [ ] 8.4 Verify no contractions in file names or variable names
-- [ ] 8.5 Run linting and formatting checks across all new files
+- [x] 8.4 Verify no contractions in file names or variable names (all names are descriptive, enforced by linter)
+- [x] 8.5 Run linting and formatting checks across all new files (0 errors, `pnpm nx run score:lint` passes)
 - [ ] 8.6 Create git branch `feature/score-register-movement-reps` and commit all changes
