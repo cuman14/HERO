@@ -1,14 +1,43 @@
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { TestBed } from '@angular/core/testing';
+import { SUPABASE_CLIENT } from '@hero/core';
+import { MOVEMENT_REPOSITORY } from '../infrastructure/movement.repository';
+import { REPETITION_RECORD_REPOSITORY } from '../infrastructure/repetition-record.repository';
 import { RegisterRepetitionsFacade } from './register-repetitions.facade';
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+setupTestBed();
+
 describe('RegisterRepetitionsFacade', () => {
   let facade: RegisterRepetitionsFacade;
 
-  beforeEach(() => {
-    facade = new RegisterRepetitionsFacade();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      providers: [
+        RegisterRepetitionsFacade,
+        { provide: SUPABASE_CLIENT, useValue: {} },
+        {
+          provide: MOVEMENT_REPOSITORY,
+          useValue: { findByHeat: vi.fn(), findById: vi.fn() },
+        },
+        {
+          provide: REPETITION_RECORD_REPOSITORY,
+          useValue: {
+            findByHeatAndAthlete: vi.fn(),
+            save: vi.fn(),
+            subscribe: vi.fn(),
+          },
+        },
+      ],
+    }).compileComponents();
+    facade = TestBed.inject(RegisterRepetitionsFacade);
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
   });
 
   describe('loadHeat', () => {
@@ -73,13 +102,20 @@ describe('RegisterRepetitionsFacade', () => {
       expect(facade.isSubmitting()).toBe(true);
     });
 
-    it('should confirm record after submission', async () => {
+    it('should confirm record and advance movement after submission', async () => {
+      const initialIndex = facade.currentMovementIndex();
       facade.incrementRepetitionCount();
-      expect(facade.hasUnsavedChanges()).toBe(true);
       facade.submitRepetitionCount();
       await delay(400);
-      expect(facade.hasUnsavedChanges()).toBe(false);
       expect(facade.isSubmitting()).toBe(false);
+      expect(facade.currentMovementIndex()).toBe(initialIndex + 1);
+    });
+
+    it('should navigate to next movement after submission', async () => {
+      expect(facade.currentMovementIndex()).toBe(0);
+      facade.submitRepetitionCount();
+      await delay(400);
+      expect(facade.currentMovementIndex()).toBe(1);
     });
   });
 

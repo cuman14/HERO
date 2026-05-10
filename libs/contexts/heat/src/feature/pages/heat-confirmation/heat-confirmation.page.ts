@@ -25,14 +25,7 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
     WodInfoCardComponent,
   ],
   templateUrl: './heat-confirmation.page.html',
-  styles: [
-    `
-      :host {
-        display: block;
-        height: 100dvh;
-      }
-    `,
-  ],
+  styleUrl: './heat-confirmation.page.css',
 })
 export class HeatConfirmationPage {
   private readonly router = inject(Router);

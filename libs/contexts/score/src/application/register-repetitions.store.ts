@@ -11,6 +11,7 @@ export interface RegisterRepetitionsState {
   movements: Movement[];
   currentMovementIndex: number;
   repetitionRecords: Map<string, RepetitionRecord>;
+  scoreId: string | null;
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -22,12 +23,14 @@ export class RegisterRepetitionsStore {
     movements: [],
     currentMovementIndex: 0,
     repetitionRecords: new Map(),
+    scoreId: null,
     isLoading: false,
     isSubmitting: false,
     error: null,
   });
 
   readonly athleteHeat = computed(() => this.state().athleteHeat);
+  readonly scoreId = computed(() => this.state().scoreId);
   readonly movements = computed(() => this.state().movements);
   readonly currentMovementIndex = computed(
     () => this.state().currentMovementIndex,
@@ -95,6 +98,7 @@ export class RegisterRepetitionsStore {
     athleteHeat: AthleteHeat,
     movements: Movement[],
     repetitionRecords: RepetitionRecord[],
+    scoreId?: string,
   ): void {
     const recordsMap = new Map<string, RepetitionRecord>();
     for (const record of repetitionRecords) {
@@ -106,6 +110,7 @@ export class RegisterRepetitionsStore {
       movements: [...movements].sort((a, b) => a.order - b.order),
       currentMovementIndex: 0,
       repetitionRecords: recordsMap,
+      scoreId: scoreId ?? state.scoreId,
       isLoading: false,
       error: null,
     }));

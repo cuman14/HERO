@@ -12,6 +12,18 @@ export {
 } from './domain/scoring.strategy';
 
 // Infrastructure
+export { MovementMapper } from './infrastructure/mappers/movement.mapper';
+export { RepetitionRecordMapper } from './infrastructure/mappers/repetition-record.mapper';
+export {
+  MOVEMENT_REPOSITORY,
+  type MovementRepository,
+} from './infrastructure/movement.repository';
+export { SupabaseMovementRepository } from './infrastructure/movement.repository.supabase';
+export {
+  REPETITION_RECORD_REPOSITORY,
+  type RepetitionRecordRepository,
+} from './infrastructure/repetition-record.repository';
+export { SupabaseRepetitionRecordRepository } from './infrastructure/repetition-record.repository.supabase';
 export {
   ScoreMapper,
   type SupabaseScoreRow,

@@ -9,12 +9,12 @@
 
 H.E.R.O is a SaaS platform for managing results in high-intensity fitness competitions (CrossFit, Hyrox). It consists of three modules in a **Nx monorepo**:
 
-| Module | Tech | Target |
-|--------|------|--------|
-| `apps/admin` | Angular 17+ | Desktop / Tablet |
-| `apps/judge` | Angular 17+ PWA | Mobile-first |
-| `apps/leaderboard` | Astro | TV / Projector / Mobile |
-| `libs/*` | Shared domain libs | All apps |
+| Module             | Tech               | Target                  |
+| ------------------ | ------------------ | ----------------------- |
+| `apps/admin`       | Angular 17+        | Desktop / Tablet        |
+| `apps/judge`       | Angular 17+ PWA    | Mobile-first            |
+| `apps/leaderboard` | Astro              | TV / Projector / Mobile |
+| `libs/*`           | Shared domain libs | All apps                |
 
 **Backend:** Supabase (PostgreSQL + Realtime)  
 **Hosting:** Vercel  
@@ -53,16 +53,16 @@ H.E.R.O/
 
 ### Naming conventions
 
-| Layer | Suffix | Example |
-|-------|--------|---------|
-| Entity | `.entity.ts` | `score.entity.ts` |
-| Value Object | `.vo.ts` | `rep-count.vo.ts` |
-| Use Case | `.use-case.ts` | `submit-score.use-case.ts` |
-| Repository interface | `.repository.ts` | `score.repository.ts` |
-| Supabase adapter | `.repository.supabase.ts` | `score.repository.supabase.ts` |
-| Angular Service | `.service.ts` | `score-state.service.ts` |
-| Component | `.component.ts` | `score-input.component.ts` |
-| Test | `.spec.ts` | `score-input.component.spec.ts` |
+| Layer                | Suffix                    | Example                         |
+| -------------------- | ------------------------- | ------------------------------- |
+| Entity               | `.entity.ts`              | `score.entity.ts`               |
+| Value Object         | `.vo.ts`                  | `rep-count.vo.ts`               |
+| Use Case             | `.use-case.ts`            | `submit-score.use-case.ts`      |
+| Repository interface | `.repository.ts`          | `score.repository.ts`           |
+| Supabase adapter     | `.repository.supabase.ts` | `score.repository.supabase.ts`  |
+| Angular Service      | `.service.ts`             | `score-state.service.ts`        |
+| Component            | `.component.ts`           | `score-input.component.ts`      |
+| Test                 | `.spec.ts`                | `score-input.component.spec.ts` |
 
 ---
 
@@ -122,13 +122,7 @@ export class SubmitScoreUseCase {
   private readonly repo = inject(SCORE_REPOSITORY);
 
   async execute(athleteId: string, heatId: string, reps: number): Promise<void> {
-    const score = new Score(
-      crypto.randomUUID(),
-      athleteId,
-      heatId,
-      new RepCount(reps),
-      new Date(),
-    );
+    const score = new Score(crypto.randomUUID(), athleteId, heatId, new RepCount(reps), new Date());
     await this.repo.save(score);
   }
 }
@@ -161,10 +155,7 @@ export class ScoreRepositorySupabase implements ScoreRepository {
   }
 
   async findByHeat(heatId: string): Promise<Score[]> {
-    const { data } = await this.supabase
-      .from('scores')
-      .select('*')
-      .eq('heat_id', heatId);
+    const { data } = await this.supabase.from('scores').select('*').eq('heat_id', heatId);
     return (data ?? []).map(/* map to domain entity */);
   }
 }
@@ -246,10 +237,10 @@ export class ScoreInputStateService {
 ```typescript
 @Component({
   selector: 'app-score-input',
-  standalone: true,                        // ← ALWAYS
+  standalone: true, // ← ALWAYS
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './score-input.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,  // ← ALWAYS
+  changeDetection: ChangeDetectionStrategy.OnPush, // ← ALWAYS
 })
 export class ScoreInputComponent {
   protected readonly state = inject(ScoreInputStateService);
@@ -277,6 +268,9 @@ export class ScoreInputComponent {
 - No business logic in templates. No complex expressions in `{{ }}`.
 - Inputs typed with `input<T>()` signal API (Angular 17+).
 - Outputs typed with `output<T>()` signal API (Angular 17+).
+- **Page components (`*.page.ts`) MUST use `templateUrl` pointing to a separate `.page.html` file and `styleUrl` pointing to a separate `.page.css` file. Inline `template` and `styles` are forbidden in page components.**
+- **All variable names MUST be descriptive. Single-letter or abbreviated names (e.g., `m`, `i`, `s`, `a`) are forbidden, including in callbacks and array iterators. Use names that express intent (e.g., `movement`, `movementIndex`, `seconds`, `athlete`).**
+- **When business logic in a component could benefit from a design pattern (Mapper, Strategy, Command, etc.), the agent MUST propose the pattern with justification and wait for user approval before implementing it.**
 
 ```typescript
 // Signal-based inputs/outputs (Angular 17+)
@@ -305,9 +299,11 @@ readonly onScoreSubmitted = output<void>();
 
 ```html
 <!-- ✅ Correct -->
-<button class="w-full bg-violet-600 text-white font-semibold py-4 rounded-2xl 
+<button
+  class="w-full bg-violet-600 text-white font-semibold py-4 rounded-2xl 
                text-lg active:scale-95 transition-transform disabled:opacity-50"
-        [disabled]="state.submitting()">
+  [disabled]="state.submitting()"
+>
   Enviar Score
 </button>
 
@@ -385,9 +381,11 @@ For each pattern, the AI agent must justify its use before implementing it.
 ### Patterns to evaluate on every feature:
 
 #### Repository Pattern ✅ ALWAYS USE
+
 **Why:** Decouples domain from Supabase. Allows swapping backend without touching use cases or UI. Critical for testability.
 
 #### Observer / Reactive (Signals) ✅ ALWAYS USE
+
 **Why:** Angular Signals provide fine-grained reactivity without RxJS complexity. Leaderboard real-time updates use Supabase Realtime → converted to Signals at the infrastructure boundary.
 
 ```typescript
@@ -395,8 +393,7 @@ For each pattern, the AI agent must justify its use before implementing it.
 effect(() => {
   const channel = this.supabase
     .channel('scores')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' },
-      (payload) => this._scores.set(payload.new as Score[]))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, (payload) => this._scores.set(payload.new as Score[]))
     .subscribe();
 
   return () => channel.unsubscribe(); // cleanup
@@ -404,6 +401,7 @@ effect(() => {
 ```
 
 #### Command Pattern — EVALUATE PER FEATURE
+
 **When to use:** When a user action needs to be queued, retried, or logged (e.g., offline score submission in Judge PWA).  
 **When NOT to use:** Simple CRUD operations that don't need queuing.
 
@@ -418,14 +416,15 @@ interface ScoreCommand {
 ```
 
 #### Factory Pattern — EVALUATE PER FEATURE
+
 **When to use:** Creating domain entities with complex construction logic or variants.  
 **When NOT to use:** Simple object creation that a constructor handles fine.
 
 ```typescript
 // Only if Score creation has multiple complex variants
 export class ScoreFactory {
-  static createForIndividual(athleteId: string, heatId: string, reps: number): Score { }
-  static createForTeam(teamId: string, heatId: string, memberReps: number[]): Score { }
+  static createForIndividual(athleteId: string, heatId: string, reps: number): Score {}
+  static createForTeam(teamId: string, heatId: string, memberReps: number[]): Score {}
 }
 ```
 
@@ -486,7 +485,7 @@ Scopes: admin | judge | leaderboard | domain | application | infra | ui | nx
 
 Examples:
 feat(judge): add numpad score input component
-test(judge): add rendering tests for score-input component  
+test(judge): add rendering tests for score-input component
 fix(infra): handle supabase realtime reconnection on network loss
 perf(leaderboard): debounce score update signal by 300ms
 refactor(domain): extract RepCount value object from Score entity
@@ -500,6 +499,9 @@ Before generating any code, the AI agent must verify:
 
 - [ ] Layer is correct: domain / application / infrastructure / presentation
 - [ ] Component is standalone with `OnPush`
+- [ ] Page components (`*.page.ts`) use `templateUrl` + `styleUrl` with separate `.page.html` and `.page.css` files (no inline `template` or `styles`)
+- [ ] All variable names are descriptive — no single-letter or abbreviated names in any scope (callbacks, iterators, parameters)
+- [ ] If logic warrants a design pattern, proposal has been presented to and approved by the user before implementing
 - [ ] State is managed with Signals, not BehaviorSubject
 - [ ] Tailwind v4 classes only, no inline styles
 - [ ] A `.spec.ts` file is created alongside every new component
@@ -513,12 +515,12 @@ Before generating any code, the AI agent must verify:
 
 ## 12. Module Accent Color Quick Reference
 
-| Module | Primary | Accent | Background |
-|--------|---------|--------|------------|
-| Admin Panel | `blue-600` | `blue-500` | `blue-50` |
-| Judge Interface | `violet-600` | `violet-500` | `violet-50` |
+| Module           | Primary       | Accent        | Background   |
+| ---------------- | ------------- | ------------- | ------------ |
+| Admin Panel      | `blue-600`    | `blue-500`    | `blue-50`    |
+| Judge Interface  | `violet-600`  | `violet-500`  | `violet-50`  |
 | Live Leaderboard | `emerald-600` | `emerald-500` | `emerald-50` |
 
 ---
 
-*Last updated: March 2026 — MVP target: April 11, 2026*
+_Last updated: March 2026 — MVP target: April 11, 2026_

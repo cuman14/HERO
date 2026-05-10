@@ -1,5 +1,13 @@
-import { Injectable } from '@angular/core';
-import { RepetitionCount } from '../domain/repetition-record.model';
+import { inject, Injectable, OnDestroy } from '@angular/core';
+import { SUPABASE_CLIENT } from '@hero/core';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { AthleteHeat } from '../domain/athlete-heat.model';
+import {
+  RepetitionCount,
+  RepetitionRecord,
+} from '../domain/repetition-record.model';
+import { MOVEMENT_REPOSITORY } from '../infrastructure/movement.repository';
+import { REPETITION_RECORD_REPOSITORY } from '../infrastructure/repetition-record.repository';
 import {
   MOCK_ATHLETE_HEAT,
   MOCK_MOVEMENTS,
@@ -7,9 +15,40 @@ import {
 } from './mock-heat-data';
 import { RegisterRepetitionsStore } from './register-repetitions.store';
 
+interface HeatAthleteContext {
+  id: string;
+  heat_id: string;
+  athlete_id: string | null;
+  team_id: string | null;
+  judge_id: string | null;
+  lane: number | null;
+  heat: {
+    id: string;
+    name: string;
+    wod_id: string;
+    wod: { id: string; name: string; type: string };
+  };
+  team: {
+    id: string;
+    name: string;
+    bib_number: string | null;
+    level_id: string;
+  } | null;
+  athlete: { id: string; name: string; bib_number: string | null } | null;
+}
+
+interface ScoreRow {
+  id: string;
+  value: Record<string, unknown> | null;
+}
+
 @Injectable()
-export class RegisterRepetitionsFacade {
+export class RegisterRepetitionsFacade implements OnDestroy {
   readonly store = new RegisterRepetitionsStore();
+
+  private readonly supabase = inject<SupabaseClient>(SUPABASE_CLIENT);
+  private readonly movementRepo = inject(MOVEMENT_REPOSITORY);
+  private readonly repRecordRepo = inject(REPETITION_RECORD_REPOSITORY);
 
   readonly athleteHeat = this.store.athleteHeat;
   readonly movements = this.store.movements;
@@ -26,9 +65,18 @@ export class RegisterRepetitionsFacade {
   readonly isSubmitting = this.store.isSubmitting;
   readonly error = this.store.error;
 
-  loadHeat(): void {
+  private unsubscribeRealtime: (() => void) | null = null;
+
+  loadHeat(heatAthleteId?: string): void {
     this.store.setLoading(true);
-    // Phase 2: Using mock data. Phase 4 (Infrastructure) will replace with real repository calls.
+    if (!heatAthleteId) {
+      this.loadMockData();
+      return;
+    }
+    this.loadRealData(heatAthleteId);
+  }
+
+  private loadMockData(): void {
     setTimeout(() => {
       this.store.loadHeatData(
         MOCK_ATHLETE_HEAT,
@@ -36,6 +84,143 @@ export class RegisterRepetitionsFacade {
         MOCK_REPETITION_RECORDS,
       );
     }, 300);
+  }
+
+  private async loadRealData(heatAthleteId: string): Promise<void> {
+    try {
+      const { data: context, error } = await this.supabase
+        .from('heat_athletes')
+        .select(
+          `
+          id, heat_id, athlete_id, team_id, judge_id, lane,
+          heat:heats!heat_athletes_heat_id_fkey(
+            id, name, wod_id,
+            wod:wods!heats_wod_id_fkey(id, name, type)
+          ),
+          team:teams!heat_athletes_team_id_fkey(id, name, bib_number, level_id),
+          athlete:athletes!heat_athletes_athlete_id_fkey(id, name, bib_number)
+        `,
+        )
+        .eq('id', heatAthleteId)
+        .single<HeatAthleteContext>();
+
+      if (error || !context) {
+        this.store.setError(
+          `Heat assignment not found: ${error?.message ?? 'unknown'}`,
+        );
+        this.store.setLoading(false);
+        return;
+      }
+
+      const subjectId = context.team_id ?? context.athlete_id ?? '';
+      const athleteHeat = this.buildAthleteHeat(context, subjectId);
+
+      const [movements, existingRecords, scoreId] = await Promise.all([
+        this.movementRepo.findByHeat(context.heat_id),
+        this.repRecordRepo.findByHeatAndAthlete(context.heat_id, subjectId),
+        this.findOrCreateScore(context, subjectId),
+      ]);
+
+      const initialRecords = this.mergeRecordsWithMovements(
+        existingRecords,
+        movements,
+        subjectId,
+        context.heat_id,
+        context.judge_id ?? '',
+        scoreId,
+      );
+
+      this.store.loadHeatData(athleteHeat, movements, initialRecords, scoreId);
+
+      this.unsubscribeRealtime?.();
+      this.unsubscribeRealtime = this.repRecordRepo.subscribe(
+        context.heat_id,
+        subjectId,
+        (updated) =>
+          this.store.loadHeatData(athleteHeat, movements, updated, scoreId),
+      );
+    } catch (err) {
+      this.store.setError(`Failed to load heat data: ${String(err)}`);
+      this.store.setLoading(false);
+    }
+  }
+
+  private buildAthleteHeat(
+    ctx: HeatAthleteContext,
+    subjectId: string,
+  ): AthleteHeat {
+    const name = ctx.team?.name ?? ctx.athlete?.name ?? subjectId;
+    const bib = ctx.team?.bib_number ?? ctx.athlete?.bib_number ?? '';
+    return AthleteHeat.create({
+      athleteId: subjectId,
+      athleteName: name,
+      bibNumber: bib,
+      division: '',
+      heatId: ctx.heat_id,
+      heatName: ctx.heat.name,
+      wodName: ctx.heat.wod?.name ?? '',
+      wodType: ctx.heat.wod?.type ?? '',
+      lane: ctx.lane ?? 0,
+    });
+  }
+
+  private async findOrCreateScore(
+    ctx: HeatAthleteContext,
+    subjectId: string,
+  ): Promise<string> {
+    const { data: existing } = await this.supabase
+      .from('scores')
+      .select('id, value')
+      .eq('heat_id', ctx.heat_id)
+      .or(`athlete_id.eq.${subjectId},team_id.eq.${subjectId}`)
+      .maybeSingle<ScoreRow>();
+
+    if (existing) return existing.id;
+
+    const levelId = ctx.team?.level_id ?? '';
+    const isTeam = !!ctx.team_id;
+
+    const { data: created, error } = await this.supabase
+      .from('scores')
+      .insert({
+        heat_id: ctx.heat_id,
+        ...(isTeam ? { team_id: subjectId } : { athlete_id: subjectId }),
+        wod_id: ctx.heat.wod_id,
+        level_id: levelId,
+        judge_id: ctx.judge_id,
+        value: { movement_reps: {} },
+        status: 'draft',
+      })
+      .select('id')
+      .single<{ id: string }>();
+
+    if (error || !created)
+      throw new Error(`Cannot create score: ${error?.message}`);
+    return created.id;
+  }
+
+  private mergeRecordsWithMovements(
+    existing: RepetitionRecord[],
+    movements: { id: string }[],
+    athleteId: string,
+    heatId: string,
+    judgeId: string,
+    scoreId: string,
+  ): RepetitionRecord[] {
+    const byMovementId = new Map(existing.map((r) => [r.movementId, r]));
+    return movements.map(
+      (m) =>
+        byMovementId.get(m.id) ??
+        RepetitionRecord.create(`${scoreId}-${m.id}`, {
+          movementId: m.id,
+          athleteId,
+          heatId,
+          count: RepetitionCount.zero(),
+          judgeId,
+          confirmed: false,
+          createdAt: new Date(),
+        }),
+    );
   }
 
   updateRepetitionCount(count: number): void {
@@ -67,10 +252,24 @@ export class RegisterRepetitionsFacade {
     const movement = this.currentMovement();
     if (!movement) return;
     this.store.setSubmitting(true);
-    // Phase 2: Mock submission. Phase 4 (Infrastructure) will replace with real repository calls.
-    setTimeout(() => {
-      this.store.confirmRepetitionRecord(movement.id);
-    }, 200);
+
+    const record = this.store.currentRepetitionRecord();
+    const scoreId = this.store.scoreId();
+
+    if (record && scoreId) {
+      this.repRecordRepo
+        .save(record.confirm(), scoreId)
+        .catch((err) => this.store.setError(String(err)))
+        .finally(() => {
+          this.store.confirmRepetitionRecord(movement.id);
+          this.store.navigateNext();
+        });
+    } else {
+      setTimeout(() => {
+        this.store.confirmRepetitionRecord(movement.id);
+        this.store.navigateNext();
+      }, 200);
+    }
   }
 
   navigateToMovement(index: number): void {
@@ -83,5 +282,9 @@ export class RegisterRepetitionsFacade {
 
   navigatePrevious(): void {
     this.store.navigatePrevious();
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribeRealtime?.();
   }
 }

@@ -40,14 +40,14 @@
 
 ## 5. Visual Validation & Testing (STOP_POINT)
 
-- [ ] 5.1 Run the judge app and navigate to the register movement repetitions page
-- [ ] 5.2 Verify all UI components render correctly with mock data
-- [ ] 5.3 Test increment/decrement buttons functionality
-- [ ] 5.4 Test direct input field for repetition count
-- [ ] 5.5 Test movement navigation (next/previous buttons)
-- [ ] 5.6 Test visual feedback for unsaved changes
-- [ ] 5.7 Verify responsive design on mobile and tablet viewports
-- [ ] 5.8 **STOP_POINT: Mandatory visual validation checkpoint - await user approval before proceeding to infrastructure**
+- [x] 5.1 Run the judge app and navigate to the register movement repetitions page
+- [x] 5.2 Verify all UI components render correctly with mock data
+- [x] 5.3 Test increment/decrement buttons functionality
+- [x] 5.4 Test direct input field for repetition count
+- [x] 5.5 Test movement navigation (next/previous buttons)
+- [x] 5.6 Test visual feedback for unsaved changes
+- [x] 5.7 Verify responsive design on mobile and tablet viewports
+- [x] 5.8 **STOP_POINT: User approved on 2026-05-10 — proceeding to infrastructure**
 
 ## 6. Infrastructure Layer - Repositories & Supabase Integration
 

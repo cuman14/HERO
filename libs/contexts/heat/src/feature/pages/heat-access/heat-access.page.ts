@@ -8,19 +8,7 @@ import { ButtonComponent, HeroIconComponent, InputComponent } from '@hero/ui';
   standalone: true,
   imports: [CommonModule, ButtonComponent, InputComponent, HeroIconComponent],
   templateUrl: './heat-access.page.html',
-  styles: [
-    `
-      :host {
-        display: block;
-        height: 100dvh;
-      }
-      .split-screen-container {
-        height: 100dvh;
-        display: flex;
-        flex-direction: column;
-      }
-    `,
-  ],
+  styleUrl: './heat-access.page.css',
 })
 export class HeatAccessPage {
   private router = inject(Router);
