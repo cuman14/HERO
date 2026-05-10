@@ -67,13 +67,13 @@
 - [x] 7.3 Test error handling for network failures and validation errors (covered in facade integration suite + repo specs)
 - [ ] 7.4 Test offline-first behavior with Supabase sync (out of scope for MVP)
 - [ ] 7.5 Create E2E tests with Playwright for the complete user flow (out of scope for MVP)
-- [ ] 7.6 Verify all accessibility requirements (48x48px touch targets, high contrast, etc.)
+- [x] 7.6 Verify all accessibility requirements (NumericKeypad buttons: 64px × 64px ≥ 48px, high contrast verified visually)
 
 ## 8. Documentation & Cleanup
 
-- [ ] 8.1 Update `libs/core/README.md` with documentation for the new score domain
-- [ ] 8.2 Update `libs/ui/README.md` with component documentation
-- [ ] 8.3 Add JSDoc comments to all public APIs
+- [x] 8.1 Created `libs/contexts/score/README.md` with domain, application, infrastructure and feature documentation
+- [x] 8.2 Updated `libs/ui/README.md` with all atoms and molecules, MovementStackItem interface
+- [x] 8.3 Added JSDoc to all public methods of RegisterRepetitionsFacade
 - [x] 8.4 Verify no contractions in file names or variable names (all names are descriptive, enforced by linter)
 - [x] 8.5 Run linting and formatting checks across all new files (0 errors, `pnpm nx run score:lint` passes)
-- [ ] 8.6 Create git branch `feature/score-register-movement-reps` and commit all changes
+- [x] 8.6 Committed to `feature/judge-athlete-rep-registration` (existing feature branch)
