@@ -77,6 +77,8 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Deploy judge to Vercel
+        env:
+          VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
         run: |
           cd dist/apps/judge
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
@@ -110,6 +112,8 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Deploy admin to Vercel
+        env:
+          VERCEL_PROJECT_ID: prj_OhTXf4PmY8OjryOsqEN04KLwi1KW
         run: |
           cd dist/apps/admin/browser
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
@@ -143,6 +147,8 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Deploy leaderboard to Vercel
+        env:
+          VERCEL_PROJECT_ID: prj_cG7qB4nOaKnCo7PfUBKWJkRXfcSC
         run: |
           cd dist/apps/leaderboard
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
