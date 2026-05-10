@@ -1,146 +1,112 @@
-# AGENTS.md — H.E.R.O Agent Skills Reference
+# AGENTS.md
 
-> Skills available in this monorepo for AI agents (Windsurf / Antigravity / Claude).  
-> Reference the skill name in your prompt to activate it.
+Guidance for AI coding agents working in this repo. Human docs live in `docs/`; this file is the source of truth when they disagree.
 
----
+## Project
 
-## Angular Skills
+H.E.R.O — real-time scoring platform for CrossFit / Hyrox. Nx monorepo with 3 independent apps sharing a Supabase backend.
 
-### `angular-component`
+- **apps/admin** — Angular 21 (desktop)
+- **apps/judge** — Angular 21 PWA (mobile)
+- **apps/leaderboard** — Astro (TV/projector)
+- **libs/** — `contexts` (heat, score), `core`, `types`, `ui`
 
-**When to use:**
+App-specific guides (read on demand when working on that app):
 
-- Creating a new Angular standalone component
-- Refactoring class-based `@Input`/`@Output` decorators to signal-based `input()` / `output()`
-- Adding `host` bindings (replacing `@HostBinding` / `@HostListener`)
-- Implementing accessible interactive components (toggle, button, etc.)
+- `apps/judge/AGENTS.md` — Judge Interface (detailed patterns)
+- `docs/admin.md` — Admin Panel
+- `docs/judge.md` — Judge Interface (product context)
+- `docs/leaderboard.md` — Live Leaderboard
 
-**Key patterns enforced:**
+Design references:
 
-- Standalone by default — do **not** set `standalone: true` explicitly (Angular v20+)
-- `ChangeDetectionStrategy.OnPush` — always
-- Signal inputs: `input<T>()`, `input.required<T>()`, `input(default, { transform })`
-- Signal outputs: `output<T>()`
-- `host` object for bindings and listeners — never `@HostBinding` / `@HostListener`
-- Native control flow (`@if`, `@for`, `@switch`) — never `*ngIf`, `*ngFor`, `*ngSwitch`
-- Direct class/style bindings — never `ngClass` / `ngStyle`
-- `NgOptimizedImage` for static images
+- `DESIGN.md` — Visual design system tokens and guidelines (YAML frontmatter + prose). Source of truth for colors, typography, spacing, shapes, components, and do's/don'ts. Agents MUST read this file before generating or modifying any UI code.
 
-**Do NOT use for:**
+### Stitch Design Project
 
-- E2E tests or Playwright interactions
-- Service-only or state-only changes
+- **Project ID:** `13066618688962361429`
+- **Design Systems:**
+  - _Velocity Mono_ (`assets/4da4e0fa38de45f999edd03d6dce272e`) — Light theme, judge app. Primary `#8b5cf6`, Inter + Space Grotesk.
+  - _Score Design_ (`assets/14703007728964935566`) — Dark theme, admin/leaderboard. Primary `#1978e5`, Inter.
 
----
+## Stack
 
-### `angular-forms`
+- **Angular 21** — standalone, signals (`signal`, `computed`, `effect`), signal `input()`/`output()`/`model()`, `inject()`, native control flow (`@if`/`@for`/`@switch`), `OnPush`, Resource API, typed reactive forms.
+- **Signal stores** — @ngrx/signals for feature state (where needed).
+- **Astro 4+** — leaderboard app.
+- **Tailwind CSS v4** — utility-first, via `@tailwindcss/postcss` + `@tailwindcss/vite`. No Angular Material, no custom CSS classes, no inline styles.
+- **Heroicons** — icon system.
+- **Vite 7** — bundler/dev server (Angular apps via `@analogjs/vite-plugin-angular`, leaderboard native).
+- **Vitest 4** — single test runner across the workspace (`@analogjs/vitest-angular` for Angular, `@vitest/coverage-v8`, `jsdom`).
+- **Nx 22** — monorepo orchestration (`affected`, path aliases, module boundaries).
+- **Supabase** — Postgres 17 + PostgREST + Auth + Realtime + RLS. Project `blgssvpsobfpfxghigca` · region `eu-west-3`. Generated types in `libs/types/src/database.types.ts`.
+- **Vercel** — 3 independent deployments, 1 repo.
+- **TypeScript ~5.9**, **ESLint 9** + `angular-eslint`, **Prettier 3**.
 
-**When to use:**
+## Setup
 
-- Implementing a form with validation
-- Adding conditional fields (hidden, disabled, readonly)
-- Building multi-step or dynamic forms
-- Adding cross-field or async validation
+```sh
+pnpm install
+```
 
-**Key patterns enforced:**
+Env vars in `.env` (already present): `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
 
-- Signal Forms API (`@angular/forms/signals`) — experimental, recommended for new work
-- Form model is a `signal<T>()` — single source of truth
-- `form(model, schemaFn)` creates the typed form tree
-- Built-in validators: `required`, `email`, `min`, `max`, `minLength`, `maxLength`, `pattern`
-- Custom validators: `validate(field, fn)`
-- Async validators: `validateHttp(field, { request, onSuccess, onError })`
-- Conditional logic: `hidden()`, `disabled()`, `readonly()`
-- Submission: `submit(form, callback)` — marks fields touched before running callback
+## Dev / build / lint
 
-**Do NOT use for:**
+```sh
+npx nx serve <app>
+npx nx build <app>
+npx nx lint <project>
+npx nx typecheck <project>
+npx nx affected -t build lint test
+```
 
-- Template-driven forms without signals
-- Third-party form libraries (Formly, ngx-formly)
+## Testing
 
----
+- **All tests use Vitest.** Do not introduce Jest, Jasmine, Karma, or Cypress in new code, even if older docs mention them.
+- Test files: `*.spec.ts` next to the code under test.
+- Run: `npx nx test <project>` or `npx nx affected -t test`.
+- **DI style:** Always use `inject()` — NEVER `@Inject()` constructor injection. Never instantiate services with `new ClassName(mock1, mock2)`.
+- **TestBed setup:** Call `setupTestBed()` from `@analogjs/vitest-angular/setup-testbed` at MODULE LEVEL (outside describe()) in each spec file. Do NOT put it in test-setup.ts.
+- **Component tests:** Use TestBed + fixture.nativeElement — NEVER @testing-library/angular.
+- **Pure classes** (stores, mappers, domain models): instantiate directly with `new`, no TestBed needed.
+- Mock Supabase — never hit the real DB from tests.
 
-### `angular-testing`
+## Code rules
 
-**When to use:**
+- Angular: standalone components, `OnPush`, `inject()`, signal `input()` / `output()`, native control flow (`@if`/`@for`/`@switch`). No `NgModule`, no constructor DI, no `*ngIf`/`*ngFor`, no `BehaviorSubject` in stores.
+- State: `@ngrx/signals` signal stores.
+- Styling: Tailwind v4 utilities only. No custom CSS classes, no inline styles, no Angular Material.
+- Architecture: DDD + Hexagonal.
+  - Supabase queries **only** inside `libs/contexts/*/src/infrastructure/` and `libs/core/src/supabase/`.
+  - `libs/contexts/*/src/domain/` has zero runtime deps (no Angular, no Supabase).
+  - `apps/*` never import from another app.
+  - Cross-lib imports go through NX path aliases (`@hero/*`) — never relative paths.
+- Naming: `*.entity.ts`, `*.vo.ts`, `*.use-case.ts`, `*.repository.ts`, `*.repository.supabase.ts`, `*.mapper.ts`, `*.store.ts`, `*.component.ts`, `*.spec.ts`.
 
-- Writing unit tests for components, services, or directives
-- Testing signal-based components with `OnPush`
-- Mocking dependencies in `TestBed`
-- Testing HTTP interactions
+Do not invent specific component names or fixed feature lists — the product is still evolving. Follow the patterns, not the examples in `docs/`.
 
-**Key patterns enforced:**
+## Commits
 
-- **Vitest** with `@angular/build:unit-test` (Angular v20+ native support)
-- `TestBed.configureTestingModule({ imports: [StandaloneComponent] })`
-- Signal inputs set via `fixture.componentRef.setInput('name', value)`
-- Service mocks via `{ provide: ServiceClass, useValue: mockObject }`
-- Vitest mocks: `vi.fn()`, `vi.clearAllMocks()`
-- Async: `fakeAsync` + `tick()` for timers, `waitForAsync` for promises
-- HTTP: `provideHttpClientTesting()` + `HttpTestingController`
+Conventional Commits. Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `style`. Scopes: `admin`, `judge`, `leaderboard`, `domain`, `infra`, `ui`, `nx`.
 
-**Do NOT use for:**
+Keep commit messages short — single line, imperative, ≤ 72 chars. No body unless strictly necessary.
 
-- E2E testing with Cypress or Playwright
-- Testing non-Angular TypeScript code (use plain Vitest)
+## PR checklist
 
----
+- `nx affected -t lint test typecheck build` passes.
+- New logic has Vitest tests.
+- No Supabase calls outside `libs/infra/repositories/`.
+- No relative cross-lib imports.
 
-## Architecture Skills
+## Skills
 
-### `clean-ddd-hexagonal`
+Invoke these skills when relevant — they encode patterns this repo follows:
 
-**When to use:**
-
-- Designing domain models, aggregates, entities, or value objects
-- Defining repository interfaces (ports) or infrastructure adapters
-- Implementing use cases / application services
-- Working with bounded contexts, domain events, CQRS, or the outbox pattern
-- Any time the question is "where does this code go?" across layers
-
-**Key patterns enforced:**
-
-- Dependency Rule: `Infrastructure → Application → Domain` — never inward-to-outward
-- One repository per **aggregate**, not per table
-- Domain layer has **zero** external dependencies (no Angular, no Supabase)
-- Use cases = one class, one `execute()` method, injected via DI tokens
-- Cross-aggregate consistency via domain events (eventual consistency)
-- Model **behavior**, not data — avoid anemic domain models
-
-**Decision trees enforced:**
-
-| Question                               | Answer                       |
-| -------------------------------------- | ---------------------------- |
-| Pure business logic, no I/O            | `domain/`                    |
-| Orchestrates domain + has side effects | `application/`               |
-| Talks to external systems              | `infrastructure/`            |
-| Defines _how_ to interact (interface)  | port (domain or application) |
-| Implements a port                      | adapter (infrastructure)     |
-
-**Do NOT use for:**
-
-- Simple CRUD with no business rules
-- Prototypes or throwaway scripts
-- Angular component or UI concerns
-
----
-
-## Project-Specific Rules (always apply)
-
-These override or extend the generic skill defaults for this repo:
-
-| Rule                | Value                                                                                                                                                                                                                                              |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Angular version     | 20+ (skills aligned to v20+)                                                                                                                                                                                                                       |
-| Test runner         | Vitest (Jest API-compatible)                                                                                                                                                                                                                       |
-| Styling             | Tailwind CSS v4 only — no inline styles                                                                                                                                                                                                            |
-| State               | Angular Signals — no NgRx, no BehaviorSubject for new state                                                                                                                                                                                        |
-| Component placement | Reusable → `libs/ui/`, Feature-specific → `apps/{app}/features/`                                                                                                                                                                                   |
-| Page components     | Must use `templateUrl` + `styleUrl` — no inline `template`/`styles`                                                                                                                                                                                |
-| Variable naming     | Descriptive always — no single-letter names (e.g. `movement`, not `m`)                                                                                                                                                                             |
-| Design patterns     | Propose + await approval before implementing (Repository, Command, etc.)                                                                                                                                                                           |
-| DI style            | Always use `inject()` — **never** `@Inject()` constructor injection. Test services/facades via `TestBed.inject()` with mocked providers, not direct `new ClassName(...)`                                                                           |
-| TestBed bootstrap   | Call `setupTestBed()` from `@analogjs/vitest-angular/setup-testbed` at **module level** in each spec file that uses `TestBed` (not in `test-setup.ts`). Use `async beforeEach` + `await TestBed.configureTestingModule({...}).compileComponents()` |
-
-See `@.windsurf/rules/app-rules.md` for the full ruleset.
+- `angular-component` — building/refactoring Angular 20+ standalone components (signals, OnPush, host bindings).
+- `angular-forms` — signal-based forms.
+- `angular-testing` — Vitest + TestBed patterns for signal components.
+- `clean-ddd-hexagonal` — DDD/Hexagonal layering for `libs/domain` and `libs/infra`.
+- `tailwind-design-system` — Tailwind v4 design tokens and component patterns.
+- `ui-ux-pro-max` — UI/UX review and design decisions.
+- `web-design-guidelines` — accessibility and UX audit.
