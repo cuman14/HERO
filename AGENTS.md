@@ -9,7 +9,7 @@ H.E.R.O — real-time scoring platform for CrossFit / Hyrox. Nx monorepo with 3 
 - **apps/admin** — Angular 21 (desktop)
 - **apps/judge** — Angular 21 PWA (mobile)
 - **apps/leaderboard** — Astro (TV/projector)
-- **libs/** — `domain`, `infra`, `ui-components`, `ui-shared`, `types`
+- **libs/** — `contexts` (heat, score), `core`, `types`, `ui`
 
 App-specific guides (read on demand when working on that app):
 
@@ -32,7 +32,7 @@ Design references:
 ## Stack
 
 - **Angular 21** — standalone, signals (`signal`, `computed`, `effect`), signal `input()`/`output()`/`model()`, `inject()`, native control flow (`@if`/`@for`/`@switch`), `OnPush`, Resource API, typed reactive forms.
-- **@ngrx/signals** — signal stores for feature state.
+- **Signal stores** — @ngrx/signals for feature state (where needed).
 - **Astro 4+** — leaderboard app.
 - **Tailwind CSS v4** — utility-first, via `@tailwindcss/postcss` + `@tailwindcss/vite`. No Angular Material, no custom CSS classes, no inline styles.
 - **Heroicons** — icon system.
@@ -66,6 +66,10 @@ npx nx affected -t build lint test
 - **All tests use Vitest.** Do not introduce Jest, Jasmine, Karma, or Cypress in new code, even if older docs mention them.
 - Test files: `*.spec.ts` next to the code under test.
 - Run: `npx nx test <project>` or `npx nx affected -t test`.
+- **DI style:** Always use `inject()` — NEVER `@Inject()` constructor injection. Never instantiate services with `new ClassName(mock1, mock2)`.
+- **TestBed setup:** Call `setupTestBed()` from `@analogjs/vitest-angular/setup-testbed` at MODULE LEVEL (outside describe()) in each spec file. Do NOT put it in test-setup.ts.
+- **Component tests:** Use TestBed + fixture.nativeElement — NEVER @testing-library/angular.
+- **Pure classes** (stores, mappers, domain models): instantiate directly with `new`, no TestBed needed.
 - Mock Supabase — never hit the real DB from tests.
 
 ## Code rules
@@ -74,10 +78,10 @@ npx nx affected -t build lint test
 - State: `@ngrx/signals` signal stores.
 - Styling: Tailwind v4 utilities only. No custom CSS classes, no inline styles, no Angular Material.
 - Architecture: DDD + Hexagonal.
-  - Supabase queries **only** inside `libs/infra/repositories/`.
-  - `libs/domain` has zero runtime deps (no Angular, no Supabase).
+  - Supabase queries **only** inside `libs/contexts/*/src/infrastructure/` and `libs/core/src/supabase/`.
+  - `libs/contexts/*/src/domain/` has zero runtime deps (no Angular, no Supabase).
   - `apps/*` never import from another app.
-  - Cross-lib imports go through NX path aliases (`@hero/domain/*`, `@hero/infra/*`, `@hero/ui-components`, `@hero/ui-shared`, `@hero/types`) — never relative paths.
+  - Cross-lib imports go through NX path aliases (`@hero/*`) — never relative paths.
 - Naming: `*.entity.ts`, `*.vo.ts`, `*.use-case.ts`, `*.repository.ts`, `*.repository.supabase.ts`, `*.mapper.ts`, `*.store.ts`, `*.component.ts`, `*.spec.ts`.
 
 Do not invent specific component names or fixed feature lists — the product is still evolving. Follow the patterns, not the examples in `docs/`.

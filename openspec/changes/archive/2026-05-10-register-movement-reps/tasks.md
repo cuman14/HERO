@@ -1,0 +1,79 @@
+## 1. Domain Models & Value Objects
+
+- [x] 1.1 Create `libs/core/src/lib/score/domain/movement.model.ts` with Movement entity and MovementId value object
+- [x] 1.2 Create `libs/core/src/lib/score/domain/repetition-record.model.ts` with RepetitionRecord entity and RepetitionCount value object
+- [x] 1.3 Create `libs/core/src/lib/score/domain/athlete-heat.model.ts` with AthleteHeat aggregate root
+- [x] 1.4 Create `libs/core/src/lib/score/domain/index.ts` barrel export for all domain models
+
+## 2. Application Layer - Facades & Signal Stores
+
+- [x] 2.1 Create `libs/core/src/lib/score/application/register-repetitions.facade.ts` with methods: `loadHeat()`, `updateRepetitionCount()`, `submitRepetitionCount()`, `navigateToMovement()`
+- [x] 2.2 Create `libs/core/src/lib/score/application/register-repetitions.store.ts` Signal Store with state: `currentHeat`, `currentMovement`, `repetitionCounts`, `isLoading`, `error`
+- [x] 2.3 Create mock data file `libs/core/src/lib/score/application/mock-heat-data.ts` with sample heat, movements, and athlete data
+- [x] 2.4 Create `libs/core/src/lib/score/application/index.ts` barrel export for facade and store
+- [x] 2.5 Create unit tests `libs/core/src/lib/score/application/register-repetitions.store.spec.ts` for store logic
+- [x] 2.6 Create unit tests `libs/core/src/lib/score/application/register-repetitions.facade.spec.ts` for facade methods
+
+## 3. UI Components (Dumb Components)
+
+- [x] 3.1 Create `libs/ui/src/lib/repetition-counter/repetition-counter.component.ts` with input/output for count and state
+- [x] 3.2 Create `libs/ui/src/lib/repetition-counter/repetition-counter.component.html` template with increment/decrement buttons and input field
+- [x] 3.3 Create `libs/ui/src/lib/repetition-counter/repetition-counter.component.css` with Tailwind styling
+- [x] 3.4 Create unit tests `libs/ui/src/lib/repetition-counter/repetition-counter.component.spec.ts`
+- [x] 3.5 Create `libs/ui/src/lib/movement-card/movement-card.component.ts` displaying movement name and description
+- [x] 3.6 Create `libs/ui/src/lib/movement-card/movement-card.component.html` template
+- [x] 3.7 Create `libs/ui/src/lib/movement-card/movement-card.component.css` with Tailwind styling
+- [x] 3.8 Create unit tests `libs/ui/src/lib/movement-card/movement-card.component.spec.ts`
+- [x] 3.9 Create `libs/ui/src/lib/athlete-header/athlete-header.component.ts` displaying athlete info
+- [x] 3.10 Create `libs/ui/src/lib/athlete-header/athlete-header.component.html` template
+- [x] 3.11 Create `libs/ui/src/lib/athlete-header/athlete-header.component.css` with Tailwind styling
+- [x] 3.12 Create unit tests `libs/ui/src/lib/athlete-header/athlete-header.component.spec.ts`
+
+## 4. Feature Page Component
+
+- [x] 4.1 Create `apps/judge/src/app/features/score/pages/register-movement-repetitions/register-movement-repetitions.page.ts` smart component
+- [x] 4.2 Create `apps/judge/src/app/features/score/pages/register-movement-repetitions/register-movement-repetitions.page.html` template
+- [x] 4.3 Create `apps/judge/src/app/features/score/pages/register-movement-repetitions/register-movement-repetitions.page.css` with Tailwind styling
+- [x] 4.4 Create unit tests `apps/judge/src/app/features/score/pages/register-movement-repetitions/register-movement-repetitions.page.spec.ts`
+- [x] 4.5 Create route configuration in `apps/judge/src/app/app.routes.ts` for the new page
+- [x] 4.6 Integrate page with RegisterRepetitionsFacade and Signal Store
+
+## 5. Visual Validation & Testing (STOP_POINT)
+
+- [x] 5.1 Run the judge app and navigate to the register movement repetitions page
+- [x] 5.2 Verify all UI components render correctly with mock data
+- [x] 5.3 Test increment/decrement buttons functionality
+- [x] 5.4 Test direct input field for repetition count
+- [x] 5.5 Test movement navigation (next/previous buttons)
+- [x] 5.6 Test visual feedback for unsaved changes
+- [x] 5.7 Verify responsive design on mobile and tablet viewports
+- [x] 5.8 **STOP_POINT: User approved on 2026-05-10 — proceeding to infrastructure**
+
+## 6. Infrastructure Layer - Repositories & Supabase Integration
+
+- [x] 6.1 Create `libs/contexts/score/src/infrastructure/repetition-record.repository.ts` with methods: `findByHeatAndAthlete()`, `save()`, `subscribe()`
+- [x] 6.2 Create `libs/contexts/score/src/infrastructure/movement.repository.ts` with methods: `findByHeat()`, `findById()`
+- [x] 6.3 Create `libs/contexts/score/src/infrastructure/mappers/repetition-record.mapper.ts` to map between domain and Supabase models
+- [x] 6.4 Create `libs/contexts/score/src/infrastructure/mappers/movement.mapper.ts` to map between domain and Supabase models
+- [x] 6.5 Update `libs/contexts/score/src/application/register-repetitions.facade.ts` to use real repositories (`loadRealData`, `submitRepetitionCount` → `repRecordRepo.save`)
+- [x] 6.6 Implement Supabase real-time subscriptions (`repRecordRepo.subscribe` wired in `loadRealData`, unsubscribed in `ngOnDestroy`)
+- [x] 6.7 Create unit tests `libs/contexts/score/src/infrastructure/repetition-record.repository.supabase.spec.ts`
+- [x] 6.8 Create unit tests `libs/contexts/score/src/infrastructure/movement.repository.supabase.spec.ts`
+
+## 7. Integration & End-to-End Testing
+
+- [x] 7.1 Create integration tests for the full flow: load heat → navigate movements → submit rep counts (in register-repetitions.facade.spec.ts — real data integration suite)
+- [ ] 7.2 Test real-time synchronization between multiple judge instances (out of scope for MVP)
+- [x] 7.3 Test error handling for network failures and validation errors (covered in facade integration suite + repo specs)
+- [ ] 7.4 Test offline-first behavior with Supabase sync (out of scope for MVP)
+- [ ] 7.5 Create E2E tests with Playwright for the complete user flow (out of scope for MVP)
+- [x] 7.6 Verify all accessibility requirements (NumericKeypad buttons: 64px × 64px ≥ 48px, high contrast verified visually)
+
+## 8. Documentation & Cleanup
+
+- [x] 8.1 Created `libs/contexts/score/README.md` with domain, application, infrastructure and feature documentation
+- [x] 8.2 Updated `libs/ui/README.md` with all atoms and molecules, MovementStackItem interface
+- [x] 8.3 Added JSDoc to all public methods of RegisterRepetitionsFacade
+- [x] 8.4 Verify no contractions in file names or variable names (all names are descriptive, enforced by linter)
+- [x] 8.5 Run linting and formatting checks across all new files (0 errors, `pnpm nx run score:lint` passes)
+- [x] 8.6 Committed to `feature/judge-athlete-rep-registration` (existing feature branch)

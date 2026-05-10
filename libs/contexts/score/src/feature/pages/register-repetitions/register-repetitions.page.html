@@ -1,0 +1,104 @@
+<body
+  class="bg-background text-on-background font-body min-h-screen flex flex-col overflow-hidden"
+>
+  <!-- TopAppBar -->
+  <header
+    class="fixed top-0 w-full bg-white shadow-sm border-b border-slate-200 z-50"
+  >
+    <div class="flex justify-between items-center w-full px-4 h-16">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <button
+          class="p-1.5 -ml-1 hover:bg-slate-50 transition-colors active:opacity-70 rounded-full shrink-0"
+        >
+          <span class="material-symbols-outlined text-slate-500 text-xl"
+            >arrow_back</span
+          >
+        </button>
+        <div class="flex flex-col min-w-0">
+          <span
+            class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-0.5"
+          >
+            {{ facade.athleteHeat()?.heatName ?? 'HEAT' }}
+          </span>
+          <h1 class="text-sm font-black text-slate-900 truncate">
+            {{ facade.athleteHeat()?.athleteName ?? '' }}
+          </h1>
+        </div>
+      </div>
+      <div class="flex items-center">
+        <div
+          class="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg shrink-0"
+        >
+          <span class="material-symbols-outlined text-[14px]">reorder</span>
+          <span class="text-xs font-black tabular-nums whitespace-nowrap"
+            >{{ facade.totalReps() }} Reps</span
+          >
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main scrollable area -->
+  <main
+    class="flex-1 mt-16 mb-[380px] p-4 overflow-y-auto hide-scrollbar flex flex-col items-center"
+  >
+    @if (facade.athleteHeat()) {
+      <!-- Movement Stack -->
+      <lib-movement-stack-card
+        class="w-full"
+        [items]="stackItems()"
+        [elapsedSeconds]="elapsedSeconds()"
+      />
+
+      <!-- Upcoming movements -->
+      <div class="w-full max-w-md space-y-3 mt-4 pb-12">
+        @for (item of upcomingItems(); track item.id) {
+          <div
+            class="w-full rounded-2xl p-4 flex justify-between items-center transition-all"
+            [class]="
+              $first
+                ? 'bg-white border border-primary/40 shadow-sm shadow-primary/10'
+                : 'bg-white/50 border border-slate-200 opacity-40'
+            "
+          >
+            <div class="flex flex-col">
+              <span
+                class="text-[10px] font-bold uppercase tracking-widest"
+                [class]="$first ? 'text-primary/70' : 'text-slate-500'"
+                >{{ item.roundLabel }}</span
+              >
+              <span
+                class="text-sm font-semibold"
+                [class]="$first ? 'text-slate-900' : 'text-slate-700'"
+                >{{ item.targetReps }} {{ item.name }}</span
+              >
+            </div>
+            <span
+              class="material-symbols-outlined text-lg"
+              [class]="
+                $first ? 'text-primary/60 next-lock-icon' : 'text-slate-400'
+              "
+              >{{ $first ? 'lock_open' : 'lock' }}</span
+            >
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="flex items-center justify-center min-h-[400px]">
+        <div class="text-center">
+          <p class="text-slate-500 mb-4">Loading...</p>
+          <div
+            class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+          ></div>
+        </div>
+      </div>
+    }
+  </main>
+
+  <!-- Numeric Keypad (fixed bottom) -->
+  <lib-numeric-keypad
+    (digitPressed)="onDigit($event)"
+    (backspacePressed)="onBackspace()"
+    (confirmPressed)="onConfirm()"
+  />
+</body>

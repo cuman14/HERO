@@ -10,4 +10,8 @@ export const appRoutes: Route[] = [
     path: '',
     loadChildren: () => import('@hero/heat').then((m) => m.heatRoutes),
   },
+  {
+    path: 'scoring',
+    loadChildren: () => import('@hero/score').then((m) => m.scoreRoutes),
+  },
 ];

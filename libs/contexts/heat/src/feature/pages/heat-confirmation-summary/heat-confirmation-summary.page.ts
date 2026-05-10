@@ -9,7 +9,6 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { ButtonComponent } from '@hero/ui';
 import {
   type HeatConfirmationAthlete,
   type HeatConfirmationHeat,
@@ -20,17 +19,10 @@ import { type HeatConfirmationSummaryData } from '../../resolvers/heat-confirmat
 @Component({
   selector: 'app-heat-confirmation-summary',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule],
   templateUrl: './heat-confirmation-summary.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      :host {
-        display: block;
-        height: 100dvh;
-      }
-    `,
-  ],
+  styleUrl: './heat-confirmation-summary.page.css',
 })
 export class HeatConfirmationSummaryPage {
   private readonly router = inject(Router);
