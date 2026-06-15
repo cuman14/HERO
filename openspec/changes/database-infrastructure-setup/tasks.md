@@ -33,4 +33,4 @@
 
 - [x] 6.1 `scores` in `supabase_realtime` confirmed via schema dump (line 1130)
 - [x] 6.2 `scores_heat_id_status_idx` created via migration push
-- [ ] 6.3 Commit all changes to branch `feature/infra-database-infrastructure-setup`
+- [x] 6.3 Commit all changes to branch `feature/infra-database-infrastructure-setup` (commit 6509594)
