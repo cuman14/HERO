@@ -80,6 +80,7 @@ jobs:
         env:
           VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
         run: |
+          cp apps/judge/vercel.json dist/apps/judge/vercel.json
           cd dist/apps/judge
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
 
@@ -115,6 +116,7 @@ jobs:
         env:
           VERCEL_PROJECT_ID: prj_OhTXf4PmY8OjryOsqEN04KLwi1KW
         run: |
+          cp apps/admin/vercel.json dist/apps/admin/browser/vercel.json
           cd dist/apps/admin/browser
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
 
@@ -150,5 +152,6 @@ jobs:
         env:
           VERCEL_PROJECT_ID: prj_cG7qB4nOaKnCo7PfUBKWJkRXfcSC
         run: |
+          cp apps/leaderboard/vercel.json dist/apps/leaderboard/vercel.json
           cd dist/apps/leaderboard
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
