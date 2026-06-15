@@ -91,6 +91,26 @@ describe('RegisterRepetitionsStore', () => {
       expect(store.movements()[0].name).toBe('Thrusters');
       expect(store.movements()[1].name).toBe('Pull-ups');
     });
+
+    it('should merge incoming records with existing records (Realtime partial update)', () => {
+      const athleteHeat = createMockAthleteHeat();
+      const movements = createMockMovements();
+      const allRecords = createMockRecords(movements);
+      allRecords[0] = allRecords[0].updateCount(RepetitionCount.create(21));
+
+      store.loadHeatData(athleteHeat, movements, allRecords);
+
+      store.navigateNext();
+      store.updateRepetitionCount('mov-2', RepetitionCount.create(15));
+
+      const partialUpdate = [allRecords[0].confirm()];
+      store.loadHeatData(athleteHeat, movements, partialUpdate);
+
+      expect(store.repetitionRecords().get('mov-1')?.count.value).toBe(21);
+      expect(store.repetitionRecords().get('mov-1')?.confirmed).toBe(true);
+      expect(store.repetitionRecords().get('mov-2')?.count.value).toBe(15);
+      expect(store.currentMovementIndex()).toBe(1);
+    });
   });
 
   describe('navigation', () => {
@@ -203,6 +223,63 @@ describe('RegisterRepetitionsStore', () => {
       expect(store.canNavigatePrevious()).toBe(false);
       store.navigateNext();
       expect(store.canNavigatePrevious()).toBe(true);
+    });
+  });
+
+  describe('elapsed time', () => {
+    it('should start with zero elapsed seconds', () => {
+      expect(store.elapsedSeconds()).toBe(0);
+    });
+
+    it('should update elapsed seconds', () => {
+      store.setElapsedSeconds(125);
+      expect(store.elapsedSeconds()).toBe(125);
+    });
+
+    it('should reset elapsed seconds when loading a different athlete', () => {
+      store.setElapsedSeconds(125);
+      const differentAthlete = AthleteHeat.create({
+        athleteId: 'athlete-002',
+        athleteName: 'Different',
+        bibNumber: '002',
+        division: 'RX',
+        heatId: 'heat-002',
+        heatName: 'Heat 2',
+        wodName: 'Test WOD',
+        wodType: 'AMRAP',
+        lane: 2,
+      });
+      store.loadHeatData(differentAthlete, createMockMovements(), createMockRecords(createMockMovements()));
+      expect(store.elapsedSeconds()).toBe(0);
+    });
+
+    it('should preserve elapsed seconds when reloading same athlete (e.g. Realtime update)', () => {
+      store.loadHeatData(createMockAthleteHeat(), createMockMovements(), createMockRecords(createMockMovements()));
+      store.setElapsedSeconds(125);
+      store.loadHeatData(createMockAthleteHeat(), createMockMovements(), createMockRecords(createMockMovements()));
+      expect(store.elapsedSeconds()).toBe(125);
+    });
+  });
+
+  describe('all confirmed', () => {
+    it('should be false when no records are loaded', () => {
+      expect(store.allConfirmed()).toBe(false);
+    });
+
+    it('should be false when some records are unconfirmed', () => {
+      const movements = createMockMovements();
+      store.loadHeatData(createMockAthleteHeat(), movements, createMockRecords(movements));
+      store.confirmRepetitionRecord(movements[0].id);
+      expect(store.allConfirmed()).toBe(false);
+    });
+
+    it('should be true when all records are confirmed', () => {
+      const movements = createMockMovements();
+      store.loadHeatData(createMockAthleteHeat(), movements, createMockRecords(movements));
+      for (const movement of movements) {
+        store.confirmRepetitionRecord(movement.id);
+      }
+      expect(store.allConfirmed()).toBe(true);
     });
   });
 });

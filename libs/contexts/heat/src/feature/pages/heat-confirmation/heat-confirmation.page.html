@@ -121,8 +121,9 @@
             [categoryDetail]="athlete.categoryDetail"
             [type]="athlete.type"
             [selected]="isSelected(athlete.id)"
+            [scored]="athlete.scored"
             [avatarUrl]="athlete.avatarUrl ?? ''"
-            (cardClick)="toggleSelection($event)"
+            (cardClick)="onAthleteClick(athlete)"
           />
           }
         </div>

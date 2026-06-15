@@ -108,6 +108,14 @@ export class HeatConfirmationPage {
     this.selectedId.set(this.selectedId() === id ? null : id);
   }
 
+  onAthleteClick(athlete: HeatConfirmationAthlete): void {
+    if (athlete.scored) {
+      void this.router.navigate(['/scoring', athlete.id, 'summary']);
+      return;
+    }
+    this.toggleSelection(athlete.id);
+  }
+
   onTabChange(value: string): void {
     this.activeTab.set(value as 'individual' | 'teams');
     this.searchQuery.set('');

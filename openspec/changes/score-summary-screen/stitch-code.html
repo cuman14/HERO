@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8b5cf6",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-md mx-auto">
+<!-- TopAppBar -->
+<div class="flex items-center bg-white dark:bg-slate-900 p-4 pb-2 justify-between border-b border-slate-100 dark:border-slate-800">
+<div class="text-primary flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-3xl">check_circle</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12 uppercase tracking-wide">Resumen del WOD</h2>
+</div>
+<!-- Progress Indicator -->
+<div class="flex w-full flex-row items-center justify-center gap-3 py-6 bg-white dark:bg-slate-900">
+<div class="h-2 w-2 rounded-full bg-primary/20"></div>
+<div class="h-2 w-2 rounded-full bg-primary/20"></div>
+<div class="h-2 w-2 rounded-full bg-primary/20"></div>
+<div class="h-2 w-8 rounded-full bg-primary"></div>
+</div>
+<div class="p-4 space-y-4">
+<!-- Athlete Card -->
+<div class="flex items-center justify-between gap-4 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex flex-col gap-1 flex-[2_2_0px]">
+<p class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight">Carlos Rodríguez</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">#23 · RX Masculino</p>
+</div>
+<div class="size-16 bg-center bg-no-repeat bg-cover rounded-full border-2 border-primary/10" data-alt="Close up portrait of a male athlete" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB5UNkf0dSPcFPko_ZNpx37H0TiaepJXMNGyaLrFoCGf-XKskYwkUkGyomds88mWBsBiEL1Ks7CyQBVwCdm7cBXi3_vWOs823p-rTZle_-VL3Q-cIoEO6Voyjb7vbabSUVe0z4DDjSvmJwXJ1KQDejlhJ5t1lyEGj4qBQ2Wjw6cimaByTqPNbrOFERK0OaDPxAJzE4R4ELLEzx0YiVN-wh5fuDp2Poh99f7ccimVvsLH2x1DuD2M5j8D3cQj9xjvLw8wqf0U0A4LYKJ");'>
+</div>
+</div>
+<!-- Result Section -->
+<div class="flex flex-col gap-3 p-6 rounded-xl bg-primary/5 border-2 border-primary/20 items-center justify-center text-center">
+<p class="text-primary text-sm font-bold uppercase tracking-widest">Resultado Final</p>
+<p class="text-primary font-mono text-5xl font-bold leading-none py-2">142 REPS</p>
+<div class="flex items-center gap-2 text-primary/70 text-sm font-medium">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span>12:00 Time Cap</span>
+</div>
+</div>
+<!-- Breakdown List -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+<h4 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Desglose por Rondas</h4>
+<div class="space-y-3">
+<div class="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800 last:border-0">
+<span class="text-slate-600 dark:text-slate-300 font-medium">Ronda 1</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold">45 reps</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800 last:border-0">
+<span class="text-slate-600 dark:text-slate-300 font-medium">Ronda 2</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold">45 reps</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800 last:border-0">
+<span class="text-slate-600 dark:text-slate-300 font-medium">Ronda 3</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold text-primary">52 reps</span>
+</div>
+</div>
+</div>
+<!-- Penalties Section -->
+<div class="flex items-center gap-4 rounded-xl bg-red-50 dark:bg-red-950/20 p-4 border border-red-100 dark:border-red-900/30">
+<div class="text-red-500 bg-red-100 dark:bg-red-900/40 p-2 rounded-lg">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div class="flex flex-col">
+<p class="text-red-700 dark:text-red-400 text-sm font-bold uppercase tracking-tight">Penalizaciones</p>
+<p class="text-red-600 dark:text-red-300 text-base font-medium">-3 reps (1 Burpee No Rep)</p>
+</div>
+</div>
+<!-- Signature Area -->
+<div class="flex flex-col gap-2 pt-2">
+<label class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider px-1">Firma del Atleta</label>
+<div class="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-6xl">draw</span>
+</div>
+<!-- Mock signature line -->
+<div class="w-3/4 h-[2px] bg-slate-200 dark:bg-slate-700 mt-16"></div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3 pt-6 pb-10">
+<button class="flex items-center justify-center gap-3 w-full h-16 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">send</span>
+                    Enviar Resultado
+                </button>
+<button class="flex items-center justify-center w-full h-12 bg-transparent text-slate-500 dark:text-slate-400 rounded-xl font-semibold text-base hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    Corregir datos
+                </button>
+</div>
+</div>
+</div>
+</body></html>

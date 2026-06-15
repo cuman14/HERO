@@ -1,1 +1,9 @@
 <router-outlet></router-outlet>
+
+<app-error-modal
+  [visible]="errorHandling.modalState().visible"
+  [title]="errorHandling.modalState().title"
+  [message]="errorHandling.modalState().message"
+  [actionLabel]="errorHandling.modalState().actionLabel"
+  (action)="errorHandling.dismiss()"
+/>

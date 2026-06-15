@@ -63,9 +63,10 @@ export class HeatConfirmationSummaryPage {
   }
 
   onConfirm(): void {
-    if (!this.athlete() || !this.heat()) return;
+    const athleteId = this.selectedAthleteId();
+    if (!this.athlete() || !this.heat() || !athleteId) return;
     this.isConfirming.set(true);
-    this.router.navigate(['/scoring']);
+    this.router.navigate(['/scoring', athleteId]);
   }
 
   onBack(): void {

@@ -22,6 +22,7 @@ export interface HeatConfirmationAthlete {
   categoryLabel: AthleteCategoryLabel;
   categoryDetail: string;
   type: 'individual' | 'team';
+  scored: boolean;
   avatarUrl?: string;
   teamMembers?: string[];
 }

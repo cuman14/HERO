@@ -1,6 +1,7 @@
 import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
 import { TestBed } from '@angular/core/testing';
 import { SUPABASE_CLIENT } from '@hero/core';
+import { AthleteHeat } from '../domain/athlete-heat.model';
 import { Movement } from '../domain/movement.model';
 import {
   RepetitionCount,
@@ -23,7 +24,16 @@ describe('RegisterRepetitionsFacade', () => {
     await TestBed.configureTestingModule({
       providers: [
         RegisterRepetitionsFacade,
-        { provide: SUPABASE_CLIENT, useValue: {} },
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+          },
+        },
         {
           provide: MOVEMENT_REPOSITORY,
           useValue: { findByHeat: vi.fn(), findById: vi.fn() },
@@ -32,7 +42,7 @@ describe('RegisterRepetitionsFacade', () => {
           provide: REPETITION_RECORD_REPOSITORY,
           useValue: {
             findByHeatAndAthlete: vi.fn(),
-            save: vi.fn(),
+            save: vi.fn().mockResolvedValue(undefined),
             subscribe: vi.fn(),
           },
         },
@@ -47,23 +57,47 @@ describe('RegisterRepetitionsFacade', () => {
 
   describe('loadHeat', () => {
     it('should set loading to true initially', () => {
-      facade.loadHeat();
+      facade.loadHeat('ha-test');
       expect(facade.isLoading()).toBe(true);
-    });
-
-    it('should load mock data after delay', async () => {
-      facade.loadHeat();
-      await delay(500);
-      expect(facade.athleteHeat()).not.toBeNull();
-      expect(facade.movements().length).toBeGreaterThan(0);
-      expect(facade.isLoading()).toBe(false);
     });
   });
 
   describe('repetition count operations', () => {
-    beforeEach(async () => {
-      facade.loadHeat();
-      await delay(500);
+    beforeEach(() => {
+      facade.store.loadHeatData(
+        AthleteHeat.create({
+          athleteId: 'athlete-1',
+          athleteName: 'Test Athlete',
+          bibNumber: '001',
+          division: 'RX',
+          heatId: 'heat-1',
+          heatName: 'Heat 1',
+          wodName: 'Test WOD',
+          wodType: 'AMRAP',
+          lane: 1,
+        }),
+        [
+          Movement.create('mov-1', {
+            name: 'Thrusters',
+            description: 'Round 1',
+            order: 0,
+            wodId: 'wod-1',
+            targetReps: 21,
+          }),
+        ],
+        [
+          RepetitionRecord.create('rec-1', {
+            movementId: 'mov-1',
+            athleteId: 'athlete-1',
+            heatId: 'heat-1',
+            count: RepetitionCount.zero(),
+            judgeId: 'judge-1',
+            confirmed: false,
+            createdAt: new Date(),
+          }),
+        ],
+        'score-1',
+      );
     });
 
     it('should increment repetition count', () => {
@@ -96,9 +130,57 @@ describe('RegisterRepetitionsFacade', () => {
   });
 
   describe('submission', () => {
-    beforeEach(async () => {
-      facade.loadHeat();
-      await delay(500);
+    beforeEach(() => {
+      facade.store.loadHeatData(
+        AthleteHeat.create({
+          athleteId: 'athlete-1',
+          athleteName: 'Test Athlete',
+          bibNumber: '001',
+          division: 'RX',
+          heatId: 'heat-1',
+          heatName: 'Heat 1',
+          wodName: 'Test WOD',
+          wodType: 'AMRAP',
+          lane: 1,
+        }),
+        [
+          Movement.create('mov-1', {
+            name: 'Thrusters',
+            description: 'Round 1',
+            order: 0,
+            wodId: 'wod-1',
+            targetReps: 21,
+          }),
+          Movement.create('mov-2', {
+            name: 'Pull-ups',
+            description: 'Round 2',
+            order: 1,
+            wodId: 'wod-1',
+            targetReps: 21,
+          }),
+        ],
+        [
+          RepetitionRecord.create('rec-1', {
+            movementId: 'mov-1',
+            athleteId: 'athlete-1',
+            heatId: 'heat-1',
+            count: RepetitionCount.zero(),
+            judgeId: 'judge-1',
+            confirmed: false,
+            createdAt: new Date(),
+          }),
+          RepetitionRecord.create('rec-2', {
+            movementId: 'mov-2',
+            athleteId: 'athlete-1',
+            heatId: 'heat-1',
+            count: RepetitionCount.zero(),
+            judgeId: 'judge-1',
+            confirmed: false,
+            createdAt: new Date(),
+          }),
+        ],
+        'score-1',
+      );
     });
 
     it('should set submitting state', () => {
@@ -125,9 +207,73 @@ describe('RegisterRepetitionsFacade', () => {
   });
 
   describe('navigation', () => {
-    beforeEach(async () => {
-      facade.loadHeat();
-      await delay(500);
+    beforeEach(() => {
+      facade.store.loadHeatData(
+        AthleteHeat.create({
+          athleteId: 'athlete-1',
+          athleteName: 'Test Athlete',
+          bibNumber: '001',
+          division: 'RX',
+          heatId: 'heat-1',
+          heatName: 'Heat 1',
+          wodName: 'Test WOD',
+          wodType: 'AMRAP',
+          lane: 1,
+        }),
+        [
+          Movement.create('mov-1', {
+            name: 'Thrusters',
+            description: 'Round 1',
+            order: 0,
+            wodId: 'wod-1',
+            targetReps: 21,
+          }),
+          Movement.create('mov-2', {
+            name: 'Pull-ups',
+            description: 'Round 2',
+            order: 1,
+            wodId: 'wod-1',
+            targetReps: 21,
+          }),
+          Movement.create('mov-3', {
+            name: 'Burpees',
+            description: 'Round 3',
+            order: 2,
+            wodId: 'wod-1',
+            targetReps: 9,
+          }),
+        ],
+        [
+          RepetitionRecord.create('rec-1', {
+            movementId: 'mov-1',
+            athleteId: 'athlete-1',
+            heatId: 'heat-1',
+            count: RepetitionCount.zero(),
+            judgeId: 'judge-1',
+            confirmed: false,
+            createdAt: new Date(),
+          }),
+          RepetitionRecord.create('rec-2', {
+            movementId: 'mov-2',
+            athleteId: 'athlete-1',
+            heatId: 'heat-1',
+            count: RepetitionCount.zero(),
+            judgeId: 'judge-1',
+            confirmed: false,
+            createdAt: new Date(),
+          }),
+          RepetitionRecord.create('rec-3', {
+            movementId: 'mov-3',
+            athleteId: 'athlete-1',
+            heatId: 'heat-1',
+            count: RepetitionCount.zero(),
+            judgeId: 'judge-1',
+            confirmed: false,
+            createdAt: new Date(),
+          }),
+        ],
+        'score-1',
+      );
     });
 
     it('should navigate to next movement', () => {
@@ -332,5 +478,119 @@ describe('RegisterRepetitionsFacade — real data integration', () => {
     brokenFacade.loadHeat(HEAT_ATHLETE_ID);
     await delay(100);
     expect(brokenFacade.error()).toContain('not found');
+  });
+});
+
+describe('RegisterRepetitionsFacade — summary operations', () => {
+  let facade: RegisterRepetitionsFacade;
+  let updateMock: ReturnType<typeof vi.fn>;
+  let eqMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    updateMock = vi.fn().mockReturnThis();
+    eqMock = vi.fn().mockResolvedValue({ error: null });
+
+    const supabaseMock = {
+      from: vi.fn().mockReturnValue({
+        update: updateMock,
+        eq: eqMock,
+      }),
+    };
+
+    await TestBed.configureTestingModule({
+      providers: [
+        RegisterRepetitionsFacade,
+        { provide: SUPABASE_CLIENT, useValue: supabaseMock },
+        {
+          provide: MOVEMENT_REPOSITORY,
+          useValue: { findByHeat: vi.fn(), findById: vi.fn() },
+        },
+        {
+          provide: REPETITION_RECORD_REPOSITORY,
+          useValue: {
+            findByHeatAndAthlete: vi.fn(),
+            save: vi.fn(),
+            subscribe: vi.fn(),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    facade = TestBed.inject(RegisterRepetitionsFacade);
+    facade.store.loadHeatData(
+      AthleteHeat.create({
+        athleteId: 'athlete-1',
+        athleteName: 'Test Athlete',
+        bibNumber: '001',
+        division: 'RX',
+        heatId: 'heat-1',
+        heatName: 'Heat 1',
+        wodName: 'Test WOD',
+        wodType: 'AMRAP',
+        lane: 1,
+      }),
+      [
+        Movement.create('mov-1', {
+          name: 'Thrusters',
+          description: 'Round 1',
+          order: 0,
+          wodId: 'wod-1',
+          targetReps: 21,
+        }),
+      ],
+      [
+        RepetitionRecord.create('rec-1', {
+          movementId: 'mov-1',
+          athleteId: 'athlete-1',
+          heatId: 'heat-1',
+          count: RepetitionCount.create(21),
+          judgeId: 'judge-1',
+          confirmed: true,
+          createdAt: new Date(),
+        }),
+      ],
+      'score-1',
+    );
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('should record elapsed time in the store', () => {
+    facade.recordElapsedTime(125);
+    expect(facade.elapsedSeconds()).toBe(125);
+  });
+
+  it('should expose movement summary items', () => {
+    const items = facade.movementSummaryItems();
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      movementId: 'mov-1',
+      name: 'Thrusters',
+      roundLabel: 'Round 1',
+      confirmedRepetitions: 21,
+      targetRepetitions: 21,
+    });
+  });
+
+  it('should finalize score via Supabase', async () => {
+    await facade.finalizeScore('sig-1');
+    expect(updateMock).toHaveBeenCalledWith({
+      status: 'submitted',
+      value: { signature: 'sig-1' },
+    });
+    expect(eqMock).toHaveBeenCalledWith('id', 'score-1');
+    expect(facade.isSubmitting()).toBe(false);
+    expect(facade.error()).toBeNull();
+  });
+
+  it('should set error and throw when finalize score fails', async () => {
+    eqMock.mockResolvedValue({ error: { message: 'db error' } });
+    await expect(
+      facade.finalizeScore('sig-1'),
+    ).rejects.toMatchObject({ message: 'db error' });
+    expect(facade.error()).toContain('db error');
+    expect(facade.isSubmitting()).toBe(false);
   });
 });

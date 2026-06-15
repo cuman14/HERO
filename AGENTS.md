@@ -40,6 +40,7 @@ Design references:
 - **Vitest 4** — single test runner across the workspace (`@analogjs/vitest-angular` for Angular, `@vitest/coverage-v8`, `jsdom`).
 - **Nx 22** — monorepo orchestration (`affected`, path aliases, module boundaries).
 - **Supabase** — Postgres 17 + PostgREST + Auth + Realtime + RLS. Project `blgssvpsobfpfxghigca` · region `eu-west-3`. Generated types in `libs/types/src/database.types.ts`.
+- **Plane** — project management. Workspace: H.E.R.O. Project ID: `97eb5462-8f93-4bc3-9de2-1dfa6c782954` (use this directly when creating work items, do not list projects first).
 - **Vercel** — 3 independent deployments, 1 repo.
 - **TypeScript ~5.9**, **ESLint 9** + `angular-eslint`, **Prettier 3**.
 
@@ -50,6 +51,22 @@ pnpm install
 ```
 
 Env vars in `.env` (already present): `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
+
+### Supabase RLS — `scores` table
+
+`Scores` RLS was relaxed for dev because the judge app uses the anon key (no user JWT). The original
+`scores_insert_judge` policy required `judge_id = auth.uid() AND is_assigned_judge(athlete_id)`,
+which fails with anon key (`auth.uid()` = NULL). Additionally, `athlete_id` was `NOT NULL` but is
+`NULL` for team scores.
+
+Applied changes:
+- **`athlete_id`** column made nullable (FK to `athletes(id)` with ON DELETE CASCADE remains).
+- **DROP** `scores_insert_judge`, `scores_update_judge`.
+- **CREATE** `scores_insert_authenticated`, `scores_insert_anon`, `scores_update_authenticated`,
+  `scores_update_anon` — all with `USING (true)` / `WITH CHECK (true)`.
+- SELECT remains open via existing `scores_select_all`.
+
+If auth/JWT login is implemented later, tighten these policies to check `judge_id = auth.uid()`.
 
 ## Dev / build / lint
 
@@ -99,6 +116,12 @@ Keep commit messages short — single line, imperative, ≤ 72 chars. No body un
 - No Supabase calls outside `libs/infra/repositories/`.
 - No relative cross-lib imports.
 
+## Agents
+
+Project-specific subagents. Delegate to them via `task` tool when their domain matches.
+
+- **`db-hero`** — Database specialist. **MUST be delegated for:** schema migrations, RLS policies, new/changed tables, regenerating `database.types.ts`, Supabase queries, infrastructure-layer repository code (`*/*.repository.supabase.ts`), mappers (`*/*.mapper.ts`), and any Supabase CLI operations. Do NOT write Supabase queries directly — delegate to db-hero. Defined in `.opencode/agents/db-hero.md`.
+
 ## Skills
 
 Invoke these skills when relevant — they encode patterns this repo follows:
@@ -106,7 +129,7 @@ Invoke these skills when relevant — they encode patterns this repo follows:
 - `angular-component` — building/refactoring Angular 20+ standalone components (signals, OnPush, host bindings).
 - `angular-forms` — signal-based forms.
 - `angular-testing` — Vitest + TestBed patterns for signal components.
-- `clean-ddd-hexagonal` — DDD/Hexagonal layering for `libs/domain` and `libs/infra`.
+- `clean-ddd-hexagonal` — DDD/Hexagonal layering for `libs/domain` and `libs/infra`. **MUST be invoked whenever creating or modifying a new feature or screen.**
 - `tailwind-design-system` — Tailwind v4 design tokens and component patterns.
 - `ui-ux-pro-max` — UI/UX review and design decisions.
 - `web-design-guidelines` — accessibility and UX audit.
