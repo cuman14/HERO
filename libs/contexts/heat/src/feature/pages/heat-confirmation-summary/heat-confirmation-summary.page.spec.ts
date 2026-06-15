@@ -32,6 +32,7 @@ describe('HeatConfirmationSummaryPage', () => {
         categoryLabel: 'RX',
         categoryDetail: 'Individual',
         type: 'individual',
+        scored: false,
       },
     ],
   };
@@ -104,7 +105,7 @@ describe('HeatConfirmationSummaryPage', () => {
     component.onConfirm();
 
     expect(component.isConfirming()).toBe(true);
-    expect(router.navigate).toHaveBeenCalledWith(['/scoring']);
+    expect(router.navigate).toHaveBeenCalledWith(['/scoring', 'a1']);
   });
 
   it('should not navigate to scoring if data is incomplete', () => {

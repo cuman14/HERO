@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SUPABASE_CLIENT } from '@hero/core';
-import { from, map, of, switchMap, type Observable } from 'rxjs';
+import { type PostgrestSingleResponse } from '@supabase/supabase-js';
+import { combineLatest, from, map, of, switchMap, type Observable } from 'rxjs';
 import {
   HeatConfirmationMapper,
   type HeatAthleteWithRelationsRow,
@@ -24,13 +25,30 @@ export class HeatRepositorySupabase implements HeatRepository {
       switchMap((heatRow) => {
         if (!heatRow) return of(null);
 
-        return this.fetchHeatAthletes({
-          heatId: heatRow.id,
-          judgeId: params.judgeId,
-        }).pipe(
-          map((athleteRows) => {
+        return combineLatest([
+          this.fetchHeatAthletes({
+            heatId: heatRow.id,
+            judgeId: params.judgeId,
+          }),
+          this.fetchSubmittedScores(heatRow.id),
+        ]).pipe(
+          map(([athleteRows, scoresResult]) => {
+            const athleteIds = new Set(
+              scoresResult
+                .filter((s) => s.athlete_id)
+                .map((s) => s.athlete_id!),
+            );
+            const teamIds = new Set(
+              scoresResult
+                .filter((s) => s.team_id)
+                .map((s) => s.team_id!),
+            );
             const athletes =
-              HeatConfirmationMapper.toAthletesDomain(athleteRows);
+              HeatConfirmationMapper.toAthletesDomain(
+                athleteRows,
+                athleteIds,
+                teamIds,
+              );
             return {
               heat: HeatConfirmationMapper.toHeatDomain(
                 heatRow,
@@ -77,6 +95,25 @@ export class HeatRepositorySupabase implements HeatRepository {
     );
   }
 
+  private fetchSubmittedScores(
+    heatId: string,
+  ): Observable<{ athlete_id: string | null; team_id: string | null }[]> {
+    return from(
+      this.supabase
+        .from('scores')
+        .select('athlete_id, team_id')
+        .eq('heat_id', heatId)
+        .eq('status', 'submitted'),
+    ).pipe(
+      map(({ data }) =>
+        (data ?? []).map((row) => ({
+          athlete_id: row.athlete_id as string | null,
+          team_id: row.team_id as string | null,
+        })),
+      ),
+    );
+  }
+
   private fetchHeatAthletes(params: {
     heatId: string;
     judgeId?: string;
@@ -84,7 +121,7 @@ export class HeatRepositorySupabase implements HeatRepository {
     let query = this.supabase
       .from('heat_athletes')
       .select(
-        'athlete_id,team_id,lane,athletes(id,name,bib_number,box),teams(id,name,bib_number,box,team_members(name))',
+        'id,athlete_id,team_id,lane,athletes(id,name,bib_number,box),teams(id,name,bib_number,box,team_members(name))',
       )
       .eq('heat_id', params.heatId)
       .order('lane', { ascending: true, nullsFirst: false });

@@ -20,22 +20,22 @@ Login (juez)
   - Lista de heats disponibles
     │
     ▼
-② Scoring
-  Individual:                    Equipo:
-  - Numpad de entrada directa    - Input por miembro
-  - Display grande del valor     - Suma automática del total
-  - Borrar con ⌫                 - Total destacado
+② Scoring (individual o equipo)
+  - Numpad de entrada directa / inputs por miembro
+  - Avance por movimiento (SkiErg → DU → BJO → Devil Press...)
+  - Confirmación de cada movimiento
     │
     ▼
-③ Confirmación (resumen)
-  - Nombre atleta / equipo
-  - Score final (grande)
-  - Timer de cuándo se registró
-  - Opción: añadir penalización
-  - Opción: disputar score
+③ Confirmación final (Summary)
+  - Resumen de todos los movimientos + totales
+  - Firma digital del juez
+  - Finalizar → envía score a BD, navega a /heat-confirmation
     │
     ▼
-④ Siguiente atleta (si hay más en el heat)
+④ Heat confirmation (post-score)
+  - Lista de atletas del heat con indicador "Listo" (scored)
+  - Atleta ya puntuado → clic navega a summary (lectura)
+  - Atleta sin puntuar → seleccionar → Continuar → scoring (paso ②)
 ```
 
 ---
@@ -170,6 +170,18 @@ confirmed  → el admin lo validó
 disputed   → hay una reclamación
 void       → anulado (no cuenta en ranking)
 ```
+
+---
+
+## Post-score flow
+
+Tras finalizar un score en SummaryPage:
+1. El sistema navega a `/heat-confirmation?heatCode=...`
+2. Los atletas con score `submitted` muestran badge verde "Listo"
+3. Al pulsar un atleta con "Listo" → navega a `/scoring/:id/summary` (solo lectura)
+4. Al pulsar un atleta sin "Listo" → se selecciona para ir a scoring
+
+El indicador `scored` se resuelve en `HeatConfirmationMapper` cotejando `athlete_id`/`team_id` de `scores WHERE status = 'submitted'` contra los `heat_athletes` del heat.
 
 ---
 

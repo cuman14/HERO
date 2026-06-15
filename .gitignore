@@ -54,3 +54,6 @@ vitest.config.*.timestamp*
 
 # Vercel
 .vercel
+.devin
+.opencode
+.windsurf

@@ -2,7 +2,9 @@
   "name": "@hero/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:judge": "nx serve judge"
+  },
   "private": true,
   "dependencies": {
     "@angular-devkit/build-angular": "~21.1.0",

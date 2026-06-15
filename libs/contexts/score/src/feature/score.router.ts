@@ -6,15 +6,30 @@ const registerRepetitionsPage = () =>
     (m) => m.RegisterRepetitionsPage,
   );
 
+const summaryPage = () =>
+  import('./pages/summary/summary.page').then((m) => m.SummaryPage);
+
 export const scoreRoutes: Route[] = [
   {
     path: '',
-    loadComponent: registerRepetitionsPage,
     providers: provideScoreFeature(),
-  },
-  {
-    path: ':heatAthleteId',
-    loadComponent: registerRepetitionsPage,
-    providers: provideScoreFeature(),
+    children: [
+      {
+        path: '',
+        loadComponent: registerRepetitionsPage,
+      },
+      {
+        path: ':heatAthleteId',
+        loadComponent: registerRepetitionsPage,
+      },
+      {
+        path: ':heatAthleteId/summary',
+        loadComponent: summaryPage,
+      },
+      {
+        path: 'summary',
+        loadComponent: summaryPage,
+      },
+    ],
   },
 ];

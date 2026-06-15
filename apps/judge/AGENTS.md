@@ -75,6 +75,27 @@ apps/judge/src/app/features/scoring/
 - `disputed` — reclamación
 - `void` — anulado
 
+## Heat confirmation — scored indicator
+
+- `getHeatConfirmationData()` en heat repository combina fetch del heat + atletas + scores submitted.
+- `HeatConfirmationAthlete.scored` se resuelve cotejando `athlete_id`/`team_id` de scores contra `heat_athletes`.
+- `AthleteCardComponent` tiene input `scored: boolean` y muestra badge "Listo" si es true.
+- Click en atleta scored → navega a `/scoring/:heatAthleteId/summary` (SummaryPage modo lectura).
+- Click en atleta no-scored → toggle selección (flujo existente para ir a scoring).
+
+## Score summary — post-finalize navigation
+
+- `SummaryPage` tras `finalizeScore()` exitoso navega a `/heat-confirmation?heatCode=...`.
+- `heatCode` se extrae de `facade.athleteHeat()?.heatName`.
+
+## Error handling
+
+- Códigos de error `H00{n}` registrados en `apps/judge/src/app/core/error-handling/error-code.registry.ts`.
+- `ErrorHandlingService` (global, providedIn: 'root') distingue errores de negocio (`H00{n}`, muestra código + mensaje) de errores 500/inesperados (modal genérico).
+- `ErrorModalComponent` se renderiza en `app.html` desde el estado de `ErrorHandlingService`.
+- El score context expone `ScoreErrorHandler` (token `SCORE_ERROR_HANDLER`) para que facades/pages notifiquen errores de persistencia sin depender del judge app directamente.
+- Las páginas de scoring (`RegisterRepetitionsPage`, `SummaryPage`) manejan errores de `finalizeScore()` y `submitRepetitionCount()` mediante este token.
+
 ## Testing
 
 - Vitest para dominio (use cases, value objects)

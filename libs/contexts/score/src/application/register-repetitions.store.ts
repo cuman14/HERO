@@ -12,6 +12,7 @@ export interface RegisterRepetitionsState {
   currentMovementIndex: number;
   repetitionRecords: Map<string, RepetitionRecord>;
   scoreId: string | null;
+  elapsedSeconds: number;
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -24,6 +25,7 @@ export class RegisterRepetitionsStore {
     currentMovementIndex: 0,
     repetitionRecords: new Map(),
     scoreId: null,
+    elapsedSeconds: 0,
     isLoading: false,
     isSubmitting: false,
     error: null,
@@ -32,12 +34,14 @@ export class RegisterRepetitionsStore {
   readonly athleteHeat = computed(() => this.state().athleteHeat);
   readonly scoreId = computed(() => this.state().scoreId);
   readonly movements = computed(() => this.state().movements);
+  readonly repetitionRecords = computed(() => this.state().repetitionRecords);
   readonly currentMovementIndex = computed(
     () => this.state().currentMovementIndex,
   );
   readonly isLoading = computed(() => this.state().isLoading);
   readonly isSubmitting = computed(() => this.state().isSubmitting);
   readonly error = computed(() => this.state().error);
+  readonly elapsedSeconds = computed(() => this.state().elapsedSeconds);
 
   readonly currentMovement = computed(() => {
     const movements = this.movements();
@@ -82,6 +86,15 @@ export class RegisterRepetitionsStore {
     return total;
   });
 
+  readonly allConfirmed = computed(() => {
+    const records = this.state().repetitionRecords;
+    if (records.size === 0) return false;
+    for (const record of records.values()) {
+      if (!record.confirmed) return false;
+    }
+    return true;
+  });
+
   setLoading(isLoading: boolean): void {
     this.state.update((state) => ({ ...state, isLoading }));
   }
@@ -94,26 +107,38 @@ export class RegisterRepetitionsStore {
     this.state.update((state) => ({ ...state, error }));
   }
 
+  setElapsedSeconds(seconds: number): void {
+    this.state.update((state) => ({ ...state, elapsedSeconds: seconds }));
+  }
+
   loadHeatData(
     athleteHeat: AthleteHeat,
     movements: Movement[],
     repetitionRecords: RepetitionRecord[],
     scoreId?: string,
   ): void {
-    const recordsMap = new Map<string, RepetitionRecord>();
-    for (const record of repetitionRecords) {
-      recordsMap.set(record.movementId, record);
-    }
-    this.state.update((state) => ({
-      ...state,
-      athleteHeat,
-      movements: [...movements].sort((a, b) => a.order - b.order),
-      currentMovementIndex: 0,
-      repetitionRecords: recordsMap,
-      scoreId: scoreId ?? state.scoreId,
-      isLoading: false,
-      error: null,
-    }));
+    this.state.update((state) => {
+      const recordsMap = new Map(state.repetitionRecords);
+      for (const record of repetitionRecords) {
+        recordsMap.set(record.movementId, record);
+      }
+
+      const isNewAthlete = !state.athleteHeat || state.athleteHeat.athleteId !== athleteHeat.athleteId;
+      const currentMovementIndex = isNewAthlete ? 0 : state.currentMovementIndex;
+      const elapsedSeconds = isNewAthlete ? 0 : state.elapsedSeconds;
+
+      return {
+        ...state,
+        athleteHeat,
+        movements: [...movements].sort((a, b) => a.order - b.order),
+        currentMovementIndex,
+        repetitionRecords: recordsMap,
+        scoreId: scoreId ?? state.scoreId,
+        elapsedSeconds,
+        isLoading: false,
+        error: null,
+      };
+    });
   }
 
   navigateToMovement(index: number): void {

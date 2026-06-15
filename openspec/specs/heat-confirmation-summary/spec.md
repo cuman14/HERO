@@ -82,3 +82,54 @@ ENTONCES el sistema navega a /heat-confirmation-summary
   CON router state: { heatPayload, selectedAthleteId }
   (ANTES navegaba directamente a /scoring)
 ```
+
+### REQ-HEAT-CONFIRMATION-SCORED-INDICATOR (nuevo)
+
+```
+DADO QUE la pantalla heat-confirmation se ha cargado con datos del heat
+
+CUANDO el sistema consulta los scores ya enviados para este heat
+  Y existen atletas con scores en estado "submitted"
+
+ENTONCES dichos atletas muestran un badge verde "Listo"
+  Y el badge indica que el score ya fue registrado
+```
+
+### REQ-HEAT-CONFIRMATION-SCORED-CLICK (nuevo)
+
+```
+DADO QUE un atleta en heat-confirmation tiene scored = true
+  (ya tiene un score submitted en BD)
+
+CUANDO el juez pulsa sobre ese atleta
+
+ENTONCES el sistema navega directamente a /scoring/:heatAthleteId/summary
+  Y no se añade a la selección (no toggle)
+  (permite ver el resumen del score ya registrado)
+```
+
+```
+DADO QUE un atleta en heat-confirmation tiene scored = false
+  (no tiene score registrado)
+
+CUANDO el juez pulsa sobre ese atleta
+
+ENTONCES el atleta se marca/desmarca como seleccionado (toggle)
+  Y no hay navegación directa
+  (flujo existente: seleccionar → Continuar → scoring)
+```
+
+## REQUISITOS MODIFICADOS (score-summary-screen change)
+
+### REQ-SUMMARY-POST-FINALIZE-NAVIGATION (modificado)
+
+```
+DADO QUE el juez ha firmado y pulsado "Finalizar" en SummaryPage
+  Y finalizeScore() se completa exitosamente
+
+CUANDO el sistema completa la operación
+
+ENTONCES navega a /heat-confirmation
+  CON queryParam: heatCode = <código del heat>
+  (antes navegaba a /heat-confirmation sin heatCode)
+```

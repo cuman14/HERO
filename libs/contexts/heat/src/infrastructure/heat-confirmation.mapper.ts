@@ -27,7 +27,7 @@ export type HeatWithRelationsRow = Pick<
 
 export type HeatAthleteWithRelationsRow = Pick<
   HeatAthleteRow,
-  'athlete_id' | 'team_id' | 'lane'
+  'id' | 'athlete_id' | 'team_id' | 'lane'
 > & {
   athletes: Pick<AthleteRow, 'id' | 'name' | 'bib_number' | 'box'> | null;
   teams:
@@ -70,20 +70,27 @@ export class HeatConfirmationMapper {
 
   static toAthletesDomain(
     rows: HeatAthleteWithRelationsRow[],
+    scoredAthleteIds?: Set<string>,
+    scoredTeamIds?: Set<string>,
   ): HeatConfirmationAthlete[] {
     const teamsById = new Map<string, HeatConfirmationAthlete>();
     const individuals: HeatConfirmationAthlete[] = [];
 
     for (const row of rows) {
+      const scored = row.athlete_id
+        ? scoredAthleteIds?.has(row.athlete_id) ?? false
+        : scoredTeamIds?.has(row.team_id ?? '') ?? false;
+
       if (row.team_id && row.teams) {
         if (!teamsById.has(row.team_id)) {
           teamsById.set(row.team_id, {
-            id: row.teams.id,
+            id: row.id,
             name: row.teams.name,
             bibNumber: row.teams.bib_number ?? '-',
             categoryLabel: 'TEAMS',
             categoryDetail: 'Equipo',
             type: 'team',
+            scored,
             teamMembers:
               row.teams.team_members?.map((member) => member.name) ?? [],
           });
@@ -94,12 +101,13 @@ export class HeatConfirmationMapper {
       if (!row.athletes) continue;
 
       individuals.push({
-        id: row.athletes.id,
+        id: row.id,
         name: row.athletes.name,
         bibNumber: row.athletes.bib_number ?? '-',
         categoryLabel: 'RX',
         categoryDetail: 'Individual',
         type: 'individual',
+        scored,
       });
     }
 

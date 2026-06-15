@@ -43,46 +43,54 @@
     class="flex-1 mt-16 mb-[380px] p-4 overflow-y-auto hide-scrollbar flex flex-col items-center"
   >
     @if (facade.athleteHeat()) {
-      <!-- Movement Stack -->
-      <lib-movement-stack-card
-        class="w-full"
-        [items]="stackItems()"
-        [elapsedSeconds]="elapsedSeconds()"
-      />
+      @if (facade.movements().length > 0) {
+        <!-- Movement Stack -->
+        <lib-movement-stack-card
+          class="w-full"
+          [items]="stackItems()"
+          [elapsedSeconds]="elapsedSeconds()"
+        />
 
-      <!-- Upcoming movements -->
-      <div class="w-full max-w-md space-y-3 mt-4 pb-12">
-        @for (item of upcomingItems(); track item.id) {
-          <div
-            class="w-full rounded-2xl p-4 flex justify-between items-center transition-all"
-            [class]="
-              $first
-                ? 'bg-white border border-primary/40 shadow-sm shadow-primary/10'
-                : 'bg-white/50 border border-slate-200 opacity-40'
-            "
-          >
-            <div class="flex flex-col">
+        <!-- Upcoming movements -->
+        <div class="w-full max-w-md space-y-3 mt-4 pb-12">
+          @for (item of upcomingItems(); track item.id) {
+            <div
+              class="w-full rounded-2xl p-4 flex justify-between items-center transition-all"
+              [class]="
+                $first
+                  ? 'bg-white border border-primary/40 shadow-sm shadow-primary/10'
+                  : 'bg-white/50 border border-slate-200 opacity-40'
+              "
+            >
+              <div class="flex flex-col">
+                <span
+                  class="text-[10px] font-bold uppercase tracking-widest"
+                  [class]="$first ? 'text-primary/70' : 'text-slate-500'"
+                  >{{ item.roundLabel }}</span
+                >
+                <span
+                  class="text-sm font-semibold"
+                  [class]="$first ? 'text-slate-900' : 'text-slate-700'"
+                  >{{ item.targetReps }} {{ item.name }}</span
+                >
+              </div>
               <span
-                class="text-[10px] font-bold uppercase tracking-widest"
-                [class]="$first ? 'text-primary/70' : 'text-slate-500'"
-                >{{ item.roundLabel }}</span
-              >
-              <span
-                class="text-sm font-semibold"
-                [class]="$first ? 'text-slate-900' : 'text-slate-700'"
-                >{{ item.targetReps }} {{ item.name }}</span
+                class="material-symbols-outlined text-lg"
+                [class]="
+                  $first ? 'text-primary/60 next-lock-icon' : 'text-slate-400'
+                "
+                >{{ $first ? 'lock_open' : 'lock' }}</span
               >
             </div>
-            <span
-              class="material-symbols-outlined text-lg"
-              [class]="
-                $first ? 'text-primary/60 next-lock-icon' : 'text-slate-400'
-              "
-              >{{ $first ? 'lock_open' : 'lock' }}</span
-            >
+          }
+        </div>
+      } @else {
+        <div class="flex items-center justify-center min-h-[400px]">
+          <div class="text-center">
+            <p class="text-slate-600 font-medium">No movements configured for this WOD</p>
           </div>
-        }
-      </div>
+        </div>
+      }
     } @else {
       <div class="flex items-center justify-center min-h-[400px]">
         <div class="text-center">
@@ -95,10 +103,12 @@
     }
   </main>
 
-  <!-- Numeric Keypad (fixed bottom) -->
-  <lib-numeric-keypad
-    (digitPressed)="onDigit($event)"
-    (backspacePressed)="onBackspace()"
-    (confirmPressed)="onConfirm()"
-  />
+  <!-- Numeric Keypad (fixed bottom) - only show when movements exist -->
+  @if (facade.movements().length > 0) {
+    <lib-numeric-keypad
+      (digitPressed)="onDigit($event)"
+      (backspacePressed)="onBackspace()"
+      (confirmPressed)="onConfirm()"
+    />
+  }
 </body>

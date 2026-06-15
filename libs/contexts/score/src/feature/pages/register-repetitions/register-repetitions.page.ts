@@ -8,6 +8,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   MovementStackCardComponent,
   MovementStackItem,
@@ -29,6 +30,8 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
   @Input() heatAthleteId?: string;
   protected readonly facade = inject(RegisterRepetitionsFacade);
   private readonly inputBuffer = inject(InputBufferStrategy);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly elapsedSeconds = signal(0);
   private timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -52,7 +55,12 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
-    this.facade.loadHeat(this.heatAthleteId);
+    const heatAthleteId = this.heatAthleteId;
+    if (!heatAthleteId) {
+      void this.router.navigate(['/heat-access']);
+      return;
+    }
+    this.facade.loadHeat(heatAthleteId);
     this.timerInterval = setInterval(() => {
       this.elapsedSeconds.update((seconds) => seconds + 1);
     }, 1000);
@@ -63,8 +71,7 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
   }
 
   onDigit(digit: string): void {
-    const maxReps = this.facade.currentMovement()?.targetReps ?? Infinity;
-    const parsedValue = this.inputBuffer.appendDigit(digit, maxReps);
+    const parsedValue = this.inputBuffer.appendDigit(digit, 999);
     if (parsedValue !== null) this.facade.updateRepetitionCount(parsedValue);
   }
 
@@ -76,5 +83,9 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
   onConfirm(): void {
     this.facade.submitRepetitionCount();
     this.inputBuffer.reset();
+    if (!this.facade.canNavigateNext()) {
+      this.facade.recordElapsedTime(this.elapsedSeconds());
+      void this.router.navigate(['summary'], { relativeTo: this.route });
+    }
   }
 }

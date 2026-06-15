@@ -1,18 +1,15 @@
-import { inject, Injectable, OnDestroy } from '@angular/core';
+import { computed, inject, Injectable, OnDestroy } from '@angular/core';
 import { SUPABASE_CLIENT } from '@hero/core';
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { AthleteHeat } from '../domain/athlete-heat.model';
+import { type MovementSummaryItem } from '../domain/movement-summary-item.model';
 import {
   RepetitionCount,
   RepetitionRecord,
 } from '../domain/repetition-record.model';
+import { injectScoreErrorHandler } from '@hero/core';
 import { MOVEMENT_REPOSITORY } from '../infrastructure/movement.repository';
 import { REPETITION_RECORD_REPOSITORY } from '../infrastructure/repetition-record.repository';
-import {
-  MOCK_ATHLETE_HEAT,
-  MOCK_MOVEMENTS,
-  MOCK_REPETITION_RECORDS,
-} from './mock-heat-data';
 import { RegisterRepetitionsStore } from './register-repetitions.store';
 
 interface HeatAthleteContext {
@@ -49,6 +46,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
   private readonly supabase = inject<SupabaseClient>(SUPABASE_CLIENT);
   private readonly movementRepo = inject(MOVEMENT_REPOSITORY);
   private readonly repRecordRepo = inject(REPETITION_RECORD_REPOSITORY);
+  private readonly errorHandler = injectScoreErrorHandler();
 
   readonly athleteHeat = this.store.athleteHeat;
   readonly movements = this.store.movements;
@@ -64,27 +62,29 @@ export class RegisterRepetitionsFacade implements OnDestroy {
   readonly isLoading = this.store.isLoading;
   readonly isSubmitting = this.store.isSubmitting;
   readonly error = this.store.error;
+  readonly allConfirmed = this.store.allConfirmed;
+  readonly elapsedSeconds = this.store.elapsedSeconds;
+
+  readonly movementSummaryItems = computed<MovementSummaryItem[]>(() => {
+    const records = this.store.repetitionRecords();
+    return this.store.movements().map((movement) => {
+      const record = records.get(movement.id);
+      return {
+        movementId: movement.id,
+        name: movement.name,
+        roundLabel: movement.description,
+        confirmedRepetitions: record?.count.value ?? 0,
+        targetRepetitions: movement.targetReps,
+      };
+    });
+  });
 
   private unsubscribeRealtime: (() => void) | null = null;
 
-  /** Loads heat data. Pass a `heatAthleteId` to fetch from Supabase; omit to use mock data (dev/demo). */
-  loadHeat(heatAthleteId?: string): void {
+  /** Loads heat data for the given `heatAthleteId` from Supabase. */
+  loadHeat(heatAthleteId: string): void {
     this.store.setLoading(true);
-    if (!heatAthleteId) {
-      this.loadMockData();
-      return;
-    }
     this.loadRealData(heatAthleteId);
-  }
-
-  private loadMockData(): void {
-    setTimeout(() => {
-      this.store.loadHeatData(
-        MOCK_ATHLETE_HEAT,
-        MOCK_MOVEMENTS,
-        MOCK_REPETITION_RECORDS,
-      );
-    }, 300);
   }
 
   private async loadRealData(heatAthleteId: string): Promise<void> {
@@ -106,9 +106,9 @@ export class RegisterRepetitionsFacade implements OnDestroy {
         .single<HeatAthleteContext>();
 
       if (error || !context) {
-        this.store.setError(
-          `Heat assignment not found: ${error?.message ?? 'unknown'}`,
-        );
+        const message = `Heat assignment not found: ${error?.message ?? 'unknown'}`;
+        this.store.setError(message);
+        this.errorHandler?.handleError(new Error(message));
         this.store.setLoading(false);
         return;
       }
@@ -141,7 +141,9 @@ export class RegisterRepetitionsFacade implements OnDestroy {
           this.store.loadHeatData(athleteHeat, movements, updated, scoreId),
       );
     } catch (err) {
-      this.store.setError(`Failed to load heat data: ${String(err)}`);
+      const message = `Failed to load heat data: ${String(err)}`;
+      this.store.setError(message);
+      this.errorHandler?.handleError(err);
       this.store.setLoading(false);
     }
   }
@@ -252,7 +254,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.updateRepetitionCount(movement.id, current.decrement());
   }
 
-  /** Confirms the current repetition record, persists via repository (if scoreId available), and navigates to the next movement. */
+  /** Confirms the current repetition record, persists via repository, and navigates to the next movement. */
   submitRepetitionCount(): void {
     const movement = this.currentMovement();
     if (!movement) return;
@@ -261,20 +263,28 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     const record = this.store.currentRepetitionRecord();
     const scoreId = this.store.scoreId();
 
-    if (record && scoreId) {
-      this.repRecordRepo
-        .save(record.confirm(), scoreId)
-        .catch((err) => this.store.setError(String(err)))
-        .finally(() => {
-          this.store.confirmRepetitionRecord(movement.id);
-          this.store.navigateNext();
-        });
-    } else {
-      setTimeout(() => {
+    if (!record || !scoreId) {
+      const error = new Error('Cannot submit repetition: missing score context');
+      this.store.setError(error.message);
+      this.errorHandler?.handleError(error);
+      this.store.setSubmitting(false);
+      return;
+    }
+
+    this.repRecordRepo
+      .save(record.confirm(), scoreId)
+      .then(() => {
         this.store.confirmRepetitionRecord(movement.id);
         this.store.navigateNext();
-      }, 200);
-    }
+      })
+      .catch((err) => {
+        const message = extractErrorMessage(err);
+        this.store.setError(message);
+        this.errorHandler?.handleError(err);
+      })
+      .finally(() => {
+        this.store.setSubmitting(false);
+      });
   }
 
   /** Navigates directly to the movement at the given 0-based index. */
@@ -292,7 +302,61 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.navigatePrevious();
   }
 
+  /** Records the elapsed time in the store so the summary page can read it. */
+  recordElapsedTime(seconds: number): void {
+    this.store.setElapsedSeconds(seconds);
+  }
+
+  /** Finalizes the score by marking it submitted in Supabase and stores the athlete signature. */
+  async finalizeScore(signature: string): Promise<void> {
+    const scoreId = this.store.scoreId();
+    if (!scoreId) {
+      this.store.setError('No score to finalize');
+      return;
+    }
+
+    this.store.setSubmitting(true);
+    this.store.setError(null);
+
+    try {
+      const { error } = await this.supabase
+        .from('scores')
+        .update({ status: 'submitted', value: { signature } })
+        .eq('id', scoreId);
+
+      if (error) throw error;
+      this.unsubscribeRealtime?.();
+    } catch (err) {
+      const message = `Failed to finalize score: ${extractErrorMessage(err)}`;
+      this.store.setError(message);
+      throw err;
+    } finally {
+      this.store.setSubmitting(false);
+    }
+  }
+
   ngOnDestroy(): void {
     this.unsubscribeRealtime?.();
   }
+}
+
+function extractErrorMessage(err: unknown): string {
+  if (!err) return String(err);
+  if (typeof err === 'string') return err;
+
+  const errorObj = err as Record<string, unknown>;
+  const nestedError = errorObj['error'];
+  if (
+    nestedError &&
+    typeof nestedError === 'object' &&
+    typeof (nestedError as Record<string, unknown>)['message'] === 'string'
+  ) {
+    return String((nestedError as Record<string, string>)['message']);
+  }
+
+  if (typeof errorObj['message'] === 'string') {
+    return errorObj['message'];
+  }
+
+  return String(err);
 }

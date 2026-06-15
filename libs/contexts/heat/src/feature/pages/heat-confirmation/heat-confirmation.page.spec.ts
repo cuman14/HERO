@@ -24,6 +24,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
       categoryLabel: 'TEAMS',
       categoryDetail: 'Equipo Mixto RX',
       type: 'team',
+      scored: true,
       teamMembers: ['Ana García', 'Luis Pérez'],
     },
     {
@@ -33,6 +34,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
       categoryLabel: 'TEAMS',
       categoryDetail: 'Equipo Mixto RX',
       type: 'team',
+      scored: false,
       teamMembers: ['María López', 'Juan Martín'],
     },
     {
@@ -42,6 +44,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
       categoryLabel: 'RX',
       categoryDetail: 'Individual Masculino',
       type: 'individual',
+      scored: false,
     },
     {
       id: 'ath-002',
@@ -50,6 +53,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
       categoryLabel: 'RX',
       categoryDetail: 'Individual Masculino',
       type: 'individual',
+      scored: false,
     },
     {
       id: 'ath-003',
@@ -58,6 +62,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
       categoryLabel: 'SCALED',
       categoryDetail: 'Individual Masculino',
       type: 'individual',
+      scored: false,
     },
   ],
 };
