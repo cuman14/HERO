@@ -57,3 +57,5 @@ vitest.config.*.timestamp*
 .devin
 .opencode
 .windsurf
+.agents
+.github
