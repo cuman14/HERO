@@ -80,6 +80,10 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
     this.facade.updateRepetitionCount(parsedValue);
   }
 
+  onBack(): void {
+    void this.router.navigate(['/heat-confirmation']);
+  }
+
   onConfirm(): void {
     this.facade.submitRepetitionCount();
     this.inputBuffer.reset();

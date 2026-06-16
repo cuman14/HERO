@@ -70,13 +70,17 @@ interface TestContext {
   facade: ReturnType<typeof createMockFacade>;
 }
 
-function mockRoute(params: Record<string, string> = {}): ActivatedRoute {
-  return { snapshot: { params } } as unknown as ActivatedRoute;
+function mockRoute(
+  params: Record<string, string> = {},
+  queryParams: Record<string, string> = {},
+): ActivatedRoute {
+  return { snapshot: { params, queryParams } } as unknown as ActivatedRoute;
 }
 
 async function setup(overrides: {
   facade?: ReturnType<typeof createMockFacade>;
   routeParams?: Record<string, string>;
+  queryParams?: Record<string, string>;
 } = {}): Promise<TestContext> {
   const router = {
     navigate: vi.fn().mockResolvedValue(true),
@@ -94,7 +98,10 @@ async function setup(overrides: {
     providers: [
       provideRouter([]),
       { provide: RegisterRepetitionsFacade, useValue: facade },
-      { provide: ActivatedRoute, useValue: mockRoute(overrides.routeParams) },
+      {
+        provide: ActivatedRoute,
+        useValue: mockRoute(overrides.routeParams, overrides.queryParams),
+      },
     ],
   }).compileComponents();
 
@@ -133,7 +140,7 @@ describe('SummaryPage', () => {
   });
 
   it('should render athlete name and BIB', async () => {
-    const { component, fixture } = await setup();
+    const { component, fixture } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -144,7 +151,7 @@ describe('SummaryPage', () => {
   });
 
   it('should render total reps and elapsed time', async () => {
-    const { component, fixture } = await setup();
+    const { component, fixture } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -155,7 +162,7 @@ describe('SummaryPage', () => {
   });
 
   it('should render movement breakdown', async () => {
-    const { component, fixture } = await setup();
+    const { component, fixture } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -167,7 +174,7 @@ describe('SummaryPage', () => {
   });
 
   it('should not submit without signature', async () => {
-    const { component, fixture, router, facade } = await setup();
+    const { component, fixture, router, facade } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -178,7 +185,7 @@ describe('SummaryPage', () => {
   });
 
   it('should submit with signature and navigate to /heat-confirmation', async () => {
-    const { component, fixture, router, facade } = await setup();
+    const { component, fixture, router, facade } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -194,7 +201,7 @@ describe('SummaryPage', () => {
     const failingFacade = createMockFacade();
     failingFacade.finalizeScore = vi.fn().mockRejectedValue(new Error('Network error'));
 
-    const { component, fixture, router } = await setup({ facade: failingFacade });
+    const { component, fixture, router } = await setup({ facade: failingFacade, routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -234,14 +241,14 @@ describe('SummaryPage', () => {
   });
 
   it('should go back when onEdit is called', async () => {
-    const { component, location } = await setup();
+    const { component, location } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.onEdit();
     expect(location.back).toHaveBeenCalled();
   });
 
   describe('read-only mode', () => {
-    it('should load heat data when heatAthleteId is present and athleteHeat is null', async () => {
+    it('should enter read-only mode when readonly query param is set', async () => {
       const loadHeat = vi.fn();
       const emptyFacade = createMockFacade({
         athleteHeat: signal(null),
@@ -251,15 +258,15 @@ describe('SummaryPage', () => {
       const { component } = await setup({
         facade: emptyFacade,
         routeParams: { heatAthleteId: 'ha-001' },
+        queryParams: { readonly: 'true' },
       });
 
       component.ngOnInit();
 
       expect(component.isReadOnly()).toBe(true);
-      expect(loadHeat).toHaveBeenCalledWith('ha-001');
     });
 
-    it('should not enter read-only mode when athleteHeat exists', async () => {
+    it('should not enter read-only mode by default', async () => {
       const { component } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
       component.ngOnInit();
@@ -285,7 +292,7 @@ describe('SummaryPage', () => {
     });
 
     it('should navigate to /heat-confirmation on onBack', async () => {
-      const { component, router } = await setup();
+      const { component, router } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
       component.ngOnInit();
       component.onBack();
