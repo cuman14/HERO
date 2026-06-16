@@ -1,7 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
 import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repository';
 import { HeatConfirmationPage } from './heat-confirmation.page';
+
+setupTestBed();
 
 const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
   heat: {

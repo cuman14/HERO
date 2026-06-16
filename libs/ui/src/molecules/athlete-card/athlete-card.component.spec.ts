@@ -99,18 +99,20 @@ describe('AthleteCardComponent', () => {
     expect(compiled.textContent).toContain('C');
   });
 
-  it('should render team avatar stubs for type=team', () => {
+  it('should render team member initials for type=team', () => {
     fixture.componentRef.setInput('type', 'team');
+    fixture.componentRef.setInput('teamMembers', [
+      { name: 'Ana García' },
+      { name: 'Luis Pérez' },
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const teamStubsContainer = compiled.querySelector(
+    const teamContainer = compiled.querySelector(
       '.flex.items-center.shrink-0',
     );
-    expect(teamStubsContainer).not.toBeNull();
-    const stubs = compiled.querySelectorAll(
-      '.rounded-full.border-2.border-white',
-    );
-    expect(stubs.length).toBeGreaterThanOrEqual(2);
+    expect(teamContainer).not.toBeNull();
+    expect(compiled.textContent).toContain('A');
+    expect(compiled.textContent).toContain('L');
   });
 
   it('should apply TEAMS badge style for categoryLabel TEAMS', () => {

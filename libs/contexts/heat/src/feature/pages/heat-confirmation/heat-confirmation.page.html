@@ -123,6 +123,7 @@
             [selected]="isSelected(athlete.id)"
             [scored]="athlete.scored"
             [avatarUrl]="athlete.avatarUrl ?? ''"
+            [teamMembers]="athlete.teamMembers?.map(n => ({ name: n })) ?? []"
             (cardClick)="onAthleteClick(athlete)"
           />
           }

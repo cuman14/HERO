@@ -21,7 +21,16 @@
 
   <!-- Content -->
   <main class="p-4 space-y-4 pb-12">
-    @if (facade.athleteHeat(); as heat) {
+    @if (facade.isLoading()) {
+      <div class="flex items-center justify-center min-h-[400px]">
+        <div class="text-center">
+          <p class="text-slate-500 mb-4">Cargando resumen…</p>
+          <div
+            class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+          ></div>
+        </div>
+      </div>
+    } @else if (facade.athleteHeat(); as heat) {
       <!-- Athlete Card -->
       <div
         class="flex items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.08)] border border-slate-100"
@@ -65,37 +74,59 @@
       <!-- Round Breakdown -->
       <lib-round-breakdown-list [items]="facade.movementSummaryItems()" />
 
-      <!-- Signature Area -->
-      <lib-signature-pad (captured)="onSignature($event)" />
+      @if (!isReadOnly()) {
+        <!-- Signature Area (post-scoring mode only) -->
+        <lib-signature-pad (captured)="onSignature($event)" />
 
-      <!-- Action Buttons -->
-      <div class="flex flex-col gap-3 pt-6 pb-10">
-        <button
-          type="button"
-          (click)="onSubmit()"
-          [disabled]="!canSubmit()"
-          class="flex items-center justify-center gap-3 w-full h-16 bg-primary hover:bg-violet-600 text-white rounded-2xl font-extrabold text-lg shadow-xl shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          @if (facade.isSubmitting()) {
-            <lib-icon
-              name="arrow-path"
-              iconClass="w-5 h-5 animate-spin text-white"
-            />
-            <span>Enviando…</span>
-          } @else {
-            <lib-icon name="arrow-right" iconClass="w-5 h-5 text-white" />
-            <span>Confirmar y Enviar</span>
-          }
-        </button>
-        <button
-          type="button"
-          (click)="onEdit()"
-          [disabled]="facade.isSubmitting()"
-          class="flex items-center justify-center w-full h-12 bg-transparent text-slate-500 rounded-2xl font-semibold text-base hover:bg-slate-100 transition-all disabled:opacity-50"
-        >
-          Corregir datos
-        </button>
-      </div>
+        <!-- Action Buttons (post-scoring mode) -->
+        <div class="flex flex-col gap-3 pt-6 pb-10">
+          <button
+            type="button"
+            (click)="onSubmit()"
+            [disabled]="!canSubmit()"
+            class="flex items-center justify-center gap-3 w-full h-16 bg-primary hover:bg-violet-600 text-white rounded-2xl font-extrabold text-lg shadow-xl shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            @if (facade.isSubmitting()) {
+              <lib-icon
+                name="arrow-path"
+                iconClass="w-5 h-5 animate-spin text-white"
+              />
+              <span>Enviando…</span>
+            } @else {
+              <lib-icon name="arrow-right" iconClass="w-5 h-5 text-white" />
+              <span>Confirmar y Enviar</span>
+            }
+          </button>
+          <button
+            type="button"
+            (click)="onEdit()"
+            [disabled]="facade.isSubmitting()"
+            class="flex items-center justify-center w-full h-12 bg-transparent text-slate-500 rounded-2xl font-semibold text-base hover:bg-slate-100 transition-all disabled:opacity-50"
+          >
+            Corregir datos
+          </button>
+        </div>
+      } @else {
+        <!-- Action Buttons (read-only mode) -->
+        <div class="flex flex-col gap-3 pt-6 pb-10">
+          <button
+            type="button"
+            (click)="onEdit()"
+            class="flex items-center justify-center w-full h-14 bg-transparent border-2 border-primary/20 text-primary rounded-2xl font-bold text-base hover:bg-primary/5 transition-all active:scale-[0.98]"
+          >
+            <lib-icon name="pencil" iconClass="w-5 h-5 mr-2" />
+            Corregir datos
+          </button>
+          <button
+            type="button"
+            (click)="onBack()"
+            class="flex items-center justify-center w-full h-14 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-base transition-all active:scale-[0.98]"
+          >
+            <lib-icon name="arrow-left" iconClass="w-5 h-5 mr-2" />
+            Volver
+          </button>
+        </div>
+      }
     } @else if (facade.error()) {
       <div
         class="bg-red-50 border border-red-100 rounded-2xl p-5 text-center"

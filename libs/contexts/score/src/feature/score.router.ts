@@ -19,16 +19,16 @@ export const scoreRoutes: Route[] = [
         loadComponent: registerRepetitionsPage,
       },
       {
-        path: ':heatAthleteId',
-        loadComponent: registerRepetitionsPage,
-      },
-      {
         path: ':heatAthleteId/summary',
         loadComponent: summaryPage,
       },
       {
         path: 'summary',
         loadComponent: summaryPage,
+      },
+      {
+        path: ':heatAthleteId',
+        loadComponent: registerRepetitionsPage,
       },
     ],
   },

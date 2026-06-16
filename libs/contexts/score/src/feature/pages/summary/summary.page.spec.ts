@@ -1,5 +1,5 @@
 import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
-import { Location } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
@@ -52,8 +52,10 @@ function createMockFacade(
     totalReps: signal(142),
     elapsedSeconds: signal(734),
     movementSummaryItems: signal(mockMovementSummaryItems()),
+    isLoading: signal(false),
     isSubmitting: signal(false),
     error: errorSignal,
+    loadHeat: vi.fn(),
     finalizeScore: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
@@ -68,7 +70,14 @@ interface TestContext {
   facade: ReturnType<typeof createMockFacade>;
 }
 
-async function setup(overrides: { facade?: ReturnType<typeof createMockFacade> } = {}): Promise<TestContext> {
+function mockRoute(params: Record<string, string> = {}): ActivatedRoute {
+  return { snapshot: { params } } as unknown as ActivatedRoute;
+}
+
+async function setup(overrides: {
+  facade?: ReturnType<typeof createMockFacade>;
+  routeParams?: Record<string, string>;
+} = {}): Promise<TestContext> {
   const router = {
     navigate: vi.fn().mockResolvedValue(true),
   } as unknown as Mocked<Router>;
@@ -85,6 +94,7 @@ async function setup(overrides: { facade?: ReturnType<typeof createMockFacade> }
     providers: [
       provideRouter([]),
       { provide: RegisterRepetitionsFacade, useValue: facade },
+      { provide: ActivatedRoute, useValue: mockRoute(overrides.routeParams) },
     ],
   }).compileComponents();
 
@@ -207,6 +217,7 @@ describe('SummaryPage', () => {
         provideRouter([]),
         { provide: RegisterRepetitionsFacade, useValue: failingFacade },
         { provide: SCORE_ERROR_HANDLER, useValue: errorHandler },
+        { provide: ActivatedRoute, useValue: mockRoute() },
       ],
     }).compileComponents();
 
@@ -227,5 +238,62 @@ describe('SummaryPage', () => {
 
     component.onEdit();
     expect(location.back).toHaveBeenCalled();
+  });
+
+  describe('read-only mode', () => {
+    it('should load heat data when heatAthleteId is present and athleteHeat is null', async () => {
+      const loadHeat = vi.fn();
+      const emptyFacade = createMockFacade({
+        athleteHeat: signal(null),
+        movementSummaryItems: signal([]),
+        loadHeat,
+      });
+      const { component } = await setup({
+        facade: emptyFacade,
+        routeParams: { heatAthleteId: 'ha-001' },
+      });
+
+      component.ngOnInit();
+
+      expect(component.isReadOnly()).toBe(true);
+      expect(loadHeat).toHaveBeenCalledWith('ha-001');
+    });
+
+    it('should not enter read-only mode when athleteHeat exists', async () => {
+      const { component } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
+
+      component.ngOnInit();
+
+      expect(component.isReadOnly()).toBe(false);
+    });
+
+    it('should navigate to /scoring/:id on onEdit in read-only mode', async () => {
+      const emptyFacade = createMockFacade({
+        athleteHeat: signal(null),
+        movementSummaryItems: signal([]),
+      });
+      const { component, router } = await setup({
+        facade: emptyFacade,
+        routeParams: { heatAthleteId: 'ha-001' },
+      });
+
+      component.ngOnInit();
+      component.isReadOnly.set(true);
+      component.onEdit();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/scoring', 'ha-001']);
+    });
+
+    it('should navigate to /heat-confirmation on onBack', async () => {
+      const { component, router } = await setup();
+
+      component.ngOnInit();
+      component.onBack();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/heat-confirmation'], {
+        queryParams: { heatCode: 'Heat 1A' },
+      });
+    });
+
   });
 });

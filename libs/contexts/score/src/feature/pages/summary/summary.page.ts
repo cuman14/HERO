@@ -1,8 +1,8 @@
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
   OnInit,
   computed,
   inject,
@@ -30,15 +30,15 @@ import { SignaturePadComponent } from '../../components/signature-pad/signature-
   templateUrl: './summary.page.html',
 })
 export class SummaryPage implements OnInit {
-  @Input() heatAthleteId?: string;
-
   protected readonly facade = inject(RegisterRepetitionsFacade);
   private readonly errorHandler = injectScoreErrorHandler();
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
 
   protected readonly captured = signal<string | null>(null);
 
+  protected readonly isReadOnly = signal(false);
   protected readonly canSubmit = computed(
     () => !!this.captured() && !this.facade.isSubmitting(),
   );
@@ -52,9 +52,24 @@ export class SummaryPage implements OnInit {
     return `${minutes}:${seconds}`;
   });
 
+  private get heatAthleteId(): string | undefined {
+    return this.route.snapshot.params['heatAthleteId'] ?? undefined;
+  }
+
   ngOnInit(): void {
-    if (!this.facade.athleteHeat()) {
+    const id = this.heatAthleteId;
+    const isReadOnlyFlow =
+      this.route.snapshot.queryParams['readonly'] === 'true';
+
+    if (!id) {
       void this.router.navigate(['/heat-access']);
+      return;
+    }
+
+    this.isReadOnly.set(isReadOnlyFlow);
+
+    if (!this.facade.athleteHeat()) {
+      this.facade.loadHeat(id);
     }
   }
 
@@ -78,6 +93,17 @@ export class SummaryPage implements OnInit {
   }
 
   onEdit(): void {
-    this.location.back();
+    if (this.isReadOnly()) {
+      void this.router.navigate(['/scoring', this.heatAthleteId]);
+    } else {
+      this.location.back();
+    }
+  }
+
+  onBack(): void {
+    const heatCode = this.facade.athleteHeat()?.heatName;
+    void this.router.navigate(['/heat-confirmation'], {
+      queryParams: heatCode ? { heatCode } : undefined,
+    });
   }
 }

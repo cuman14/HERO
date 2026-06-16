@@ -11,6 +11,11 @@ Judges must be able to submit repetition counts to the real database with clear 
 - **WHEN** the server successfully saves the repetition count
 - **THEN** the UI advances to the next movement, or to the summary screen when the last movement is confirmed
 
+#### Scenario: Last movement confirmed — navigate to summary
+- **WHEN** the judge confirms the repetition count for the last movement (`!canNavigateNext`)
+- **THEN** the system records the elapsed time in the store
+  AND navigates to `/scoring/:heatAthleteId/summary`
+
 #### Scenario: Submission fails due to unexpected server error
 - **WHEN** the server fails to save the repetition count with an HTTP 500 or unknown error
 - **THEN** the generic error modal is displayed with a retry option
