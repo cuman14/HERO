@@ -1,5 +1,5 @@
-<body
-  class="bg-background text-on-background font-body min-h-screen flex flex-col overflow-hidden"
+<div
+  class="bg-background text-on-background font-body min-h-screen flex flex-col overflow-hidden overflow-x-hidden"
 >
   <!-- TopAppBar -->
   <header
@@ -40,7 +40,7 @@
 
   <!-- Main scrollable area -->
   <main
-    class="flex-1 mt-16 mb-[380px] p-4 overflow-y-auto hide-scrollbar flex flex-col items-center"
+    class="flex-1 mt-16 mb-[380px] p-4 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col items-center"
   >
     @if (facade.athleteHeat()) {
       @if (facade.movements().length > 0) {
@@ -111,4 +111,4 @@
       (confirmPressed)="onConfirm()"
     />
   }
-</body>
+</div>
