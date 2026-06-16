@@ -67,7 +67,7 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
       </header>
 
       <!-- Scrollable content -->
-      <main class="flex-1 overflow-y-auto pb-40">
+      <main class="flex-1 overflow-y-auto overflow-x-hidden pb-40">
         <!-- WOD Info Card -->
         <div class="p-4">
           <lib-wod-info-card

@@ -49,6 +49,10 @@
   --radius-xl: 0.75rem;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   background-color: #f8fafc;
   color: #0f172a;
