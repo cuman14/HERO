@@ -3,7 +3,6 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   AthleteCardComponent,
-  ButtonComponent,
   TabOption,
   TabSwitcherComponent,
   WodInfoCardComponent,
@@ -20,7 +19,6 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
   imports: [
     CommonModule,
     AthleteCardComponent,
-    ButtonComponent,
     TabSwitcherComponent,
     WodInfoCardComponent,
   ],
@@ -83,8 +81,7 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
         <div class="px-4 space-y-4">
           <lib-tab-switcher
             [tabs]="tabs"
-            [activeValue]="activeTab()"
-            (tabChange)="onTabChange($event)"
+            [activeValue]="'teams'"
           />
           <div class="relative">
             <svg
@@ -147,7 +144,6 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
                 [categoryLabel]="athlete.categoryLabel"
                 [categoryDetail]="athlete.categoryDetail"
                 [type]="athlete.type"
-                [selected]="isSelected(athlete.id)"
                 [scored]="athlete.scored"
                 [avatarUrl]="athlete.avatarUrl ?? ''"
                 [teamMembers]="getTeamMembers(athlete)"
@@ -159,44 +155,6 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
           }
         </div>
       </main>
-
-      <!-- Sticky Footer -->
-      <footer
-        class="absolute z-10 bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-[20px] border-t border-slate-200 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.4)] pb-10"
-      >
-        <div class="flex items-center justify-between mb-4 px-1">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <p class="text-xs font-bold text-slate-500 dark:text-slate-400">
-              {{ h.wodName }} · {{ h.location }}
-            </p>
-          </div>
-          <p class="text-xs font-black text-slate-400 uppercase">
-            Juez: {{ judge.name }}
-          </p>
-        </div>
-
-        <lib-button
-          [loading]="isContinuing()"
-          [disabled]="!canContinue()"
-          (clicked)="onContinue()"
-        >
-          @if (!isContinuing()) {
-          <span>Continuar</span>
-          <svg
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-          }
-        </lib-button>
-      </footer>
       }
       <!-- end @if heat() -->
     </div>
@@ -217,15 +175,9 @@ export class HeatConfirmationPage {
 
   readonly judge = { id: '', name: '' };
 
-  readonly tabs: TabOption[] = [
-    { value: 'teams', label: 'Equipos' },
-    { value: 'individual', label: 'Individual' },
-  ];
+    readonly tabs: TabOption[] = [{ value: 'teams', label: 'Equipos' }];
 
-  activeTab = signal<'individual' | 'teams'>('teams');
   searchQuery = signal<string>('');
-  selectedId = signal<string | null>(null);
-  isContinuing = signal<boolean>(false);
 
   readonly heat = computed<HeatConfirmationHeat | null>(
     () => this.heatPayload()?.heat ?? null,
@@ -235,25 +187,9 @@ export class HeatConfirmationPage {
     () => this.heatPayload()?.athletes.filter((a) => a.type === 'team') ?? [],
   );
 
-  private readonly individuals = computed<HeatConfirmationAthlete[]>(
-    () =>
-      this.heatPayload()?.athletes.filter((a) => a.type === 'individual') ?? [],
-  );
-
-  private readonly resolvedTab = computed<'individual' | 'teams'>(() => {
-    if (this.activeTab() === 'teams' && this.teams().length === 0) {
-      return 'individual';
-    }
-    return this.activeTab();
-  });
-
-  private readonly activeAthletes = computed<HeatConfirmationAthlete[]>(() =>
-    this.resolvedTab() === 'individual' ? this.individuals() : this.teams(),
-  );
-
   filteredAthletes = computed<HeatConfirmationAthlete[]>(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    const source = this.activeAthletes();
+    const source = this.teams();
     if (!query) return source;
     return source.filter(
       (a) =>
@@ -277,50 +213,25 @@ export class HeatConfirmationPage {
     }));
   });
 
-  canContinue = computed<boolean>(() => this.selectedId() !== null);
-
-  get selectedCount(): number {
-    return this.selectedId() ? 1 : 0;
-  }
-
-  isSelected(id: string): boolean {
-    return this.selectedId() === id;
-  }
-
-  toggleSelection(id: string): void {
-    this.selectedId.set(this.selectedId() === id ? null : id);
-  }
-
   onAthleteClick(athlete: HeatConfirmationAthlete): void {
+    const heat = this.heat();
+    if (!heat) return;
     if (athlete.scored) {
       void this.router.navigate(['/scoring', athlete.id, 'summary'], {
         queryParams: { readonly: 'true' },
       });
       return;
     }
-    this.toggleSelection(athlete.id);
-  }
-
-  onTabChange(value: string): void {
-    this.activeTab.set(value as 'individual' | 'teams');
-    this.searchQuery.set('');
-    this.selectedId.set(null);
+    void this.router.navigate(['/heat-confirmation-summary'], {
+      queryParams: {
+        heatCode: heat.code,
+        athleteId: athlete.id,
+      },
+    });
   }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
-  }
-
-  onContinue(): void {
-    if (!this.canContinue()) return;
-    const heat = this.heat();
-    if (!heat) return;
-    this.router.navigate(['/heat-confirmation-summary'], {
-      queryParams: {
-        heatCode: heat.code,
-        athleteId: this.selectedId(),
-      },
-    });
   }
 
   onBack(): void {

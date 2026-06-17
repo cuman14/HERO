@@ -73,7 +73,7 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
                 class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
               >Listo</span>
             }
-            <span [class]="badgeClasses()">{{ categoryLabel() }}</span>
+            @if (!isTeam()) {<span [class]="badgeClasses()">{{ categoryLabel() }}</span>}
           </div>
           <p class="text-slate-500 text-xs font-medium">
             #{{ bibNumber() }} &bull; {{ categoryDetail() }}
@@ -117,6 +117,8 @@ export class AthleteCardComponent {
   teamMembers = input<{ name: string; avatarUrl?: string }[]>([]);
 
   cardClick = output<string>();
+
+  isTeam = computed(() => this.type() === 'team');
 
   cardClasses = computed(() => {
     const base =
