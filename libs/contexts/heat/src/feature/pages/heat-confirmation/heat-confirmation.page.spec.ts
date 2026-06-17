@@ -104,15 +104,6 @@ describe('HeatConfirmationPage', () => {
     expect(compiled.textContent).toContain('WOD 2: AMRAP 12');
   });
 
-  it('should default to teams tab', () => {
-    expect(component.activeTab()).toBe('teams');
-  });
-
-  it('should switch to individual tab on tabChange', () => {
-    component.onTabChange('individual');
-    expect(component.activeTab()).toBe('individual');
-  });
-
   it('should show team athletes by default', () => {
     const athletes = component.filteredAthletes();
     expect(athletes.length).toBe(
@@ -120,28 +111,18 @@ describe('HeatConfirmationPage', () => {
     );
   });
 
-  it('should show individual athletes when individual tab is active', () => {
-    component.onTabChange('individual');
-    const athletes = component.filteredAthletes();
-    expect(athletes.length).toBe(
-      FIXTURE_PAYLOAD.athletes.filter((a) => a.type === 'individual').length,
-    );
-  });
-
   it('should filter athletes by name search', () => {
-    component.onTabChange('individual');
-    component.onSearch({ target: { value: 'Carlos' } } as unknown as Event);
+    component.onSearch({ target: { value: 'Alpha' } } as unknown as Event);
     const filtered = component.filteredAthletes();
     expect(filtered.length).toBe(1);
-    expect(filtered[0].name).toBe('Carlos Rodríguez');
+    expect(filtered[0].name).toBe('Box Madrid Alpha');
   });
 
   it('should filter athletes by bib number search', () => {
-    component.onTabChange('individual');
-    component.onSearch({ target: { value: '089' } } as unknown as Event);
+    component.onSearch({ target: { value: '118' } } as unknown as Event);
     const filtered = component.filteredAthletes();
     expect(filtered.length).toBe(1);
-    expect(filtered[0].bibNumber).toBe('089');
+    expect(filtered[0].bibNumber).toBe('118');
   });
 
   it('should return empty array when search has no matches', () => {
@@ -149,12 +130,6 @@ describe('HeatConfirmationPage', () => {
       target: { value: 'nonexistent123' },
     } as unknown as Event);
     expect(component.filteredAthletes().length).toBe(0);
-  });
-
-  it('should reset search when switching tabs', () => {
-    component.onSearch({ target: { value: 'Carlos' } } as unknown as Event);
-    component.onTabChange('teams');
-    expect(component.searchQuery()).toBe('');
   });
 
   it('should navigate scored athlete to summary page', () => {
@@ -188,7 +163,6 @@ describe('HeatConfirmationPage', () => {
   });
 
   it('should group athletes by category label and detail', () => {
-    component.onTabChange('individual');
     fixture.detectChanges();
     const groups = component.groupedAthletes();
     expect(groups.length).toBeGreaterThan(0);

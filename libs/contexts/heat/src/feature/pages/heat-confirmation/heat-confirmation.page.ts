@@ -81,8 +81,7 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
         <div class="px-4 space-y-4">
           <lib-tab-switcher
             [tabs]="tabs"
-            [activeValue]="activeTab()"
-            (tabChange)="onTabChange($event)"
+            [activeValue]="'teams'"
           />
           <div class="relative">
             <svg
@@ -176,12 +175,8 @@ export class HeatConfirmationPage {
 
   readonly judge = { id: '', name: '' };
 
-  readonly tabs: TabOption[] = [
-    { value: 'teams', label: 'Equipos' },
-    { value: 'individual', label: 'Individual' },
-  ];
+    readonly tabs: TabOption[] = [{ value: 'teams', label: 'Equipos' }];
 
-  activeTab = signal<'individual' | 'teams'>('teams');
   searchQuery = signal<string>('');
 
   readonly heat = computed<HeatConfirmationHeat | null>(
@@ -192,25 +187,9 @@ export class HeatConfirmationPage {
     () => this.heatPayload()?.athletes.filter((a) => a.type === 'team') ?? [],
   );
 
-  private readonly individuals = computed<HeatConfirmationAthlete[]>(
-    () =>
-      this.heatPayload()?.athletes.filter((a) => a.type === 'individual') ?? [],
-  );
-
-  private readonly resolvedTab = computed<'individual' | 'teams'>(() => {
-    if (this.activeTab() === 'teams' && this.teams().length === 0) {
-      return 'individual';
-    }
-    return this.activeTab();
-  });
-
-  private readonly activeAthletes = computed<HeatConfirmationAthlete[]>(() =>
-    this.resolvedTab() === 'individual' ? this.individuals() : this.teams(),
-  );
-
   filteredAthletes = computed<HeatConfirmationAthlete[]>(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    const source = this.activeAthletes();
+    const source = this.teams();
     if (!query) return source;
     return source.filter(
       (a) =>
@@ -249,11 +228,6 @@ export class HeatConfirmationPage {
         athleteId: athlete.id,
       },
     });
-  }
-
-  onTabChange(value: string): void {
-    this.activeTab.set(value as 'individual' | 'teams');
-    this.searchQuery.set('');
   }
 
   onSearch(event: Event): void {
