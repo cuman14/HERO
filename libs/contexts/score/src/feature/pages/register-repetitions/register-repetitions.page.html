@@ -1,5 +1,5 @@
-<body
-  class="bg-background text-on-background font-body min-h-screen flex flex-col overflow-hidden"
+<div
+  class="bg-background text-on-background font-body min-h-screen flex flex-col overflow-hidden overflow-x-hidden"
 >
   <!-- TopAppBar -->
   <header
@@ -9,6 +9,8 @@
       <div class="flex items-center gap-3 overflow-hidden">
         <button
           class="p-1.5 -ml-1 hover:bg-slate-50 transition-colors active:opacity-70 rounded-full shrink-0"
+          (click)="onBack()"
+          aria-label="Volver"
         >
           <span class="material-symbols-outlined text-slate-500 text-xl"
             >arrow_back</span
@@ -40,7 +42,7 @@
 
   <!-- Main scrollable area -->
   <main
-    class="flex-1 mt-16 mb-[380px] p-4 overflow-y-auto hide-scrollbar flex flex-col items-center"
+    class="flex-1 mt-16 mb-[380px] p-4 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col items-center"
   >
     @if (facade.athleteHeat()) {
       @if (facade.movements().length > 0) {
@@ -111,4 +113,4 @@
       (confirmPressed)="onConfirm()"
     />
   }
-</body>
+</div>
