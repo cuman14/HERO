@@ -47,6 +47,7 @@ rules:
     - "1. If it is a new screen or complex UI redesign and NO '## Stitch Instructions' block is provided: MANDATORY STOP and ask for Stitch Project/Screen IDs."
     - '2. If the change is a logic improvement, infrastructure fix, or a UI change described in detail via text: PROCEED using the text description as the source of truth.'
     - "Action: If Stitch IDs are provided, use the MCP server to download images and source code via 'curl -L'."
+    - "Plane: After creating the proposal, find the matching HERO-X work item (from the change context), transition it to 'In Progress' using plane_list_states to find the correct state UUID, and inform the user: 'Plane work item updated: https://app.plane.so/omg-projects/browse/HERO-XX' (replace XX with the actual sequence_id)."
 
   specs:
     - 'Format: Functional requirements in GIVEN/WHEN/THEN format.'
@@ -65,3 +66,9 @@ rules:
     - 'STOP_POINT: Mandatory stop for VISUAL VALIDATION after Phase 3. Do not proceed without user approval.'
     - 'Phase 4 (Infrastructure): After approval, implement real Repositories and Supabase integration.'
     - 'Quality: Every logic task requires a co-located .spec.ts file.'
+
+  apply:
+    - "Plane: When starting implementation (via openspec instructions apply), transition the matching HERO-X work item to 'In Progress' if not already done, and inform the user: 'Plane work item updated: https://app.plane.so/omg-projects/browse/HERO-XX' (replace XX with the actual sequence_id)."
+
+  archive:
+    - "Plane: On archive, transition the matching HERO-X work item to 'Done' using plane_list_states to find the correct state UUID, and inform the user: 'Plane work item updated: https://app.plane.so/omg-projects/browse/HERO-XX → Done' (replace XX with the actual sequence_id)."
