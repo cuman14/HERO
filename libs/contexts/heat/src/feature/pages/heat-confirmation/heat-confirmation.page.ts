@@ -65,7 +65,7 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
       </header>
 
       <!-- Scrollable content -->
-      <main class="flex-1 overflow-y-auto overflow-x-hidden pb-40">
+      <main class="flex-1 overflow-y-auto overflow-x-hidden pb-20">
         <!-- WOD Info Card -->
         <div class="p-4">
           <lib-wod-info-card
@@ -155,6 +155,19 @@ import { type HeatConfirmationPayload } from '../../../infrastructure/heat.repos
           }
         </div>
       </main>
+
+      <!-- Footer -->
+      @if (judge().name) {
+      <footer
+        class="sticky bottom-0 z-20 flex items-center justify-center px-4 py-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[20px] border-t border-slate-200 dark:border-slate-800"
+      >
+        <span
+          class="text-sm font-medium text-slate-500 dark:text-slate-400"
+        >
+          Juez: {{ judge().name }}
+        </span>
+      </footer>
+      }
       }
       <!-- end @if heat() -->
     </div>
@@ -173,7 +186,7 @@ export class HeatConfirmationPage {
 
   readonly heatPayload = input<HeatConfirmationPayload | null>(null);
 
-  readonly judge = { id: '', name: '' };
+  readonly judge = computed(() => this.heatPayload()?.judge ?? { id: '', name: '' });
 
     readonly tabs: TabOption[] = [{ value: 'teams', label: 'Equipos' }];
 

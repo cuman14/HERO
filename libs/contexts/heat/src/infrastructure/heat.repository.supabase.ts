@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { SUPABASE_CLIENT } from '@hero/core';
-import { type PostgrestSingleResponse } from '@supabase/supabase-js';
 import { combineLatest, from, map, of, switchMap, type Observable } from 'rxjs';
 import {
   HeatConfirmationMapper,
@@ -21,6 +20,10 @@ export class HeatRepositorySupabase implements HeatRepository {
     heatCode?: string;
     judgeId?: string;
   }): Observable<HeatConfirmationPayload | null> {
+    const judgeProfile$ = params.judgeId
+      ? this.fetchJudgeProfile(params.judgeId)
+      : of(null);
+
     return this.fetchHeat(params).pipe(
       switchMap((heatRow) => {
         if (!heatRow) return of(null);
@@ -31,8 +34,9 @@ export class HeatRepositorySupabase implements HeatRepository {
             judgeId: params.judgeId,
           }),
           this.fetchSubmittedScores(heatRow.id),
+          judgeProfile$,
         ]).pipe(
-          map(([athleteRows, scoresResult]) => {
+          map(([athleteRows, scoresResult, profile]) => {
             const athleteIds = new Set(
               scoresResult
                 .filter((s) => s.athlete_id)
@@ -55,6 +59,10 @@ export class HeatRepositorySupabase implements HeatRepository {
                 athletes.length,
               ),
               athletes,
+              judge: {
+                id: profile?.id ?? '',
+                name: profile?.display_name ?? '',
+              },
             };
           }),
         );
@@ -111,6 +119,26 @@ export class HeatRepositorySupabase implements HeatRepository {
           team_id: row.team_id as string | null,
         })),
       ),
+    );
+  }
+
+  private fetchJudgeProfile(
+    judgeId: string,
+  ): Observable<{ id: string; display_name: string } | null> {
+    return from(
+      this.supabase
+        .from('profiles')
+        .select('id, display_name')
+        .eq('id', judgeId)
+        .single(),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          if (error.code === 'PGRST116') return null;
+          throw error;
+        }
+        return data as { id: string; display_name: string };
+      }),
     );
   }
 

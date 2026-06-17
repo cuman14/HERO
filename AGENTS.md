@@ -116,6 +116,23 @@ Keep commit messages short — single line, imperative, ≤ 72 chars. No body un
 - No Supabase calls outside `libs/infra/repositories/`.
 - No relative cross-lib imports.
 
+## OpenSpec Workflow — Plane Work Item Sync (MANDATORY)
+
+Every step of the OpenSpec workflow MUST update the matching Plane work item:
+
+| Step | Action | State |
+|---|---|---|
+| **proposal** | Find HERO-X work item, transition to In Progress | `In Progress` |
+| **apply** (start implementation) | Transition to In Progress (if not already) | `In Progress` |
+| **archive** | Transition to Done | `Done` |
+
+**How to do it:**
+1. Call `plane_list_states(project_id="97eb5462-8f93-4bc3-9de2-1dfa6c782954")` to find the state UUIDs for "In Progress" and "Done"
+2. Call `plane_update_work_item(project_id, work_item_id, state="<uuid>")`
+3. Inform the user: `Plane work item updated: https://app.plane.so/omg-projects/browse/HERO-XX → <State>`
+
+Do NOT skip this. Do NOT assume I'll remember — read this every time.
+
 ## Agents
 
 Project-specific subagents. Delegate to them via `task` tool when their domain matches.

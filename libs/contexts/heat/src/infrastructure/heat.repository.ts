@@ -8,6 +8,7 @@ import {
 export interface HeatConfirmationPayload {
   heat: HeatConfirmationHeat;
   athletes: HeatConfirmationAthlete[];
+  judge: { id: string; name: string };
 }
 
 export interface HeatRepository {

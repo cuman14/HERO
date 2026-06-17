@@ -19,6 +19,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
     location: 'Box Madrid',
     status: 'pending',
   },
+  judge: { id: 'judge-1', name: 'María López' },
   athletes: [
     {
       id: 'team-001',
@@ -169,6 +170,38 @@ describe('HeatConfirmationPage', () => {
     groups.forEach((group) => {
       expect(group.label).toBeTruthy();
       expect(group.athletes.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('judge', () => {
+    it('should read judge from heatPayload', () => {
+      expect(component.judge()).toEqual({
+        id: 'judge-1',
+        name: 'María López',
+      });
+    });
+
+    it('should render judge name in a footer', () => {
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.textContent).toContain('Juez: María López');
+    });
+
+    it('should not render footer when judge name is empty', async () => {
+      const emptyJudgePayload = {
+        ...FIXTURE_PAYLOAD,
+        judge: { id: '', name: '' },
+      };
+      fixture.componentRef.setInput('heatPayload', emptyJudgePayload);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.textContent).not.toContain('Juez:');
+    });
+
+    it('should fallback to empty object when heatPayload is null', () => {
+      fixture.componentRef.setInput('heatPayload', null);
+      expect(component.judge()).toEqual({ id: '', name: '' });
     });
   });
 });
