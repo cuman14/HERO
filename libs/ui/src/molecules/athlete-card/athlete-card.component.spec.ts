@@ -40,18 +40,33 @@ describe('AthleteCardComponent', () => {
     expect(compiled.textContent).toContain('RX');
   });
 
-  it('should show unselected state by default', () => {
+  it('should show default border when not scored', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const card = compiled.querySelector('[role="button"]') as HTMLElement;
-    expect(card.className).not.toContain('border-primary');
+    expect(card.className).toContain('border-slate-200');
+    expect(card.className).not.toContain('border-emerald-300');
   });
 
-  it('should show selected state when selected is true', () => {
-    fixture.componentRef.setInput('selected', true);
+  it('should show emerald border when scored is true', () => {
+    fixture.componentRef.setInput('scored', true);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     const card = compiled.querySelector('[role="button"]') as HTMLElement;
-    expect(card.className).toContain('border-primary');
+    expect(card.className).toContain('border-emerald-300');
+  });
+
+  it('should show arrow icon when not scored', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const icon = compiled.querySelector('lib-icon') as HTMLElement;
+    expect(icon).not.toBeNull();
+  });
+
+  it('should show eye icon when scored', () => {
+    fixture.componentRef.setInput('scored', true);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const icon = compiled.querySelector('lib-icon') as HTMLElement;
+    expect(icon).not.toBeNull();
   });
 
   it('should emit cardClick with athlete id when clicked', () => {

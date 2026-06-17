@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
+import { HeroIconComponent } from '../../icons/hero-icon.component';
 
 export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
 
 @Component({
   selector: 'lib-athlete-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HeroIconComponent],
   template: `
     <div
       [class]="cardClasses()"
@@ -81,17 +82,11 @@ export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
         </div>
       </div>
 
-      <div [class]="checkClasses()">
-        @if (selected()) {
-          <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 14 14" fill="none">
-            <path
-              d="M2 7L5.5 10.5L12 3.5"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+      <div class="shrink-0">
+        @if (scored()) {
+          <lib-icon name="eye" variant="outline" iconClass="w-5 h-5 text-slate-400 dark:text-slate-500" />
+        } @else {
+          <lib-icon name="arrow-right" variant="outline" iconClass="w-5 h-5 text-slate-400 dark:text-slate-500" />
         }
       </div>
     </div>
@@ -111,7 +106,6 @@ export class AthleteCardComponent {
   categoryLabel = input.required<AthleteCategoryLabel>();
   categoryDetail = input.required<string>();
   type = input<'individual' | 'team'>('individual');
-  selected = input<boolean>(false);
   scored = input<boolean>(false);
   avatarUrl = input<string>('');
   teamMembers = input<{ name: string; avatarUrl?: string }[]>([]);
@@ -122,10 +116,10 @@ export class AthleteCardComponent {
 
   cardClasses = computed(() => {
     const base =
-      'flex items-center justify-between p-4 rounded-2xl transition-all active:scale-[0.98] cursor-pointer';
-    return this.selected()
-      ? `${base} bg-white dark:bg-slate-900 border-2 border-primary shadow-md overflow-hidden`
-      : `${base} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm`;
+      'flex items-center justify-between p-4 rounded-2xl transition-all active:scale-[0.98] cursor-pointer bg-white dark:bg-slate-900 shadow-sm';
+    return this.scored()
+      ? `${base} border-2 border-emerald-300 dark:border-emerald-700`
+      : `${base} border border-slate-200 dark:border-slate-800`;
   });
 
   badgeClasses = computed(() => {
@@ -143,17 +137,6 @@ export class AthleteCardComponent {
   });
 
   avatarClasses = computed(() => {
-    const base = 'w-12 h-12 rounded-full object-cover';
-    return this.selected()
-      ? `${base} ring-2 ring-primary/20 ring-offset-1`
-      : base;
-  });
-
-  checkClasses = computed(() => {
-    const base =
-      'flex items-center justify-center w-6 h-6 rounded-full shrink-0 transition-all';
-    return this.selected()
-      ? `${base} bg-primary shadow-sm shadow-primary/40`
-      : `${base} border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50`;
+    return 'w-12 h-12 rounded-full object-cover';
   });
 }
