@@ -65,7 +65,7 @@ const FIXTURE_PAYLOAD: HeatConfirmationPayload = {
       categoryLabel: 'SCALED',
       categoryDetail: 'Individual Masculino',
       type: 'individual',
-      scored: false,
+      scored: true,
     },
   ],
 };
@@ -88,7 +88,6 @@ describe('HeatConfirmationPage', () => {
     fixture = TestBed.createComponent(HeatConfirmationPage);
     component = fixture.componentInstance;
 
-    // Override the injected router with our mock to spy on navigate
     Object.defineProperty(component, 'router', { value: router });
 
     fixture.componentRef.setInput('heatPayload', FIXTURE_PAYLOAD);
@@ -103,11 +102,6 @@ describe('HeatConfirmationPage', () => {
   it('should render the WOD name', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('WOD 2: AMRAP 12');
-  });
-
-  it('should render judge label in footer', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Juez:');
   });
 
   it('should default to teams tab', () => {
@@ -163,53 +157,34 @@ describe('HeatConfirmationPage', () => {
     expect(component.searchQuery()).toBe('');
   });
 
-  it('should start with no selected athletes', () => {
-    expect(component.selectedCount).toBe(0);
+  it('should navigate scored athlete to summary page', () => {
+    const athlete = FIXTURE_PAYLOAD.athletes[0];
+    component.onAthleteClick(athlete);
+
+    expect(router.navigate).toHaveBeenCalledWith(
+      ['/scoring', athlete.id, 'summary'],
+      { queryParams: { readonly: 'true' } },
+    );
   });
 
-  it('should toggle athlete selection on', () => {
-    component.toggleSelection('ath-001');
-    expect(component.isSelected('ath-001')).toBe(true);
-    expect(component.selectedCount).toBe(1);
-  });
-
-  it('should toggle athlete selection off when already selected', () => {
-    component.toggleSelection('ath-001');
-    component.toggleSelection('ath-001');
-    expect(component.isSelected('ath-001')).toBe(false);
-    expect(component.selectedCount).toBe(0);
-  });
-
-  it('should track single selection only', () => {
-    component.toggleSelection('ath-001');
-    component.toggleSelection('ath-002');
-    expect(component.selectedCount).toBe(1);
-    expect(component.isSelected('ath-001')).toBe(false);
-    expect(component.isSelected('ath-002')).toBe(true);
-  });
-
-  it('should disable continue when no athletes are selected', () => {
-    expect(component.canContinue()).toBe(false);
-  });
-
-  it('should enable continue when at least one athlete is selected', () => {
-    component.toggleSelection('ath-001');
-    expect(component.canContinue()).toBe(true);
-  });
-
-  it('should navigate to summary page with state on continue', () => {
-    component.toggleSelection('ath-001');
-    component.onContinue();
+  it('should navigate non-scored athlete to heat-confirmation-summary', () => {
+    const athlete = FIXTURE_PAYLOAD.athletes[1];
+    component.onAthleteClick(athlete);
 
     expect(router.navigate).toHaveBeenCalledWith(
       ['/heat-confirmation-summary'],
       {
-        state: {
-          heatPayload: FIXTURE_PAYLOAD,
-          selectedAthleteId: 'ath-001',
+        queryParams: {
+          heatCode: 'HEAT-A3X9',
+          athleteId: athlete.id,
         },
       },
     );
+  });
+
+  it('should not render Continuar button', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).not.toContain('Continuar');
   });
 
   it('should group athletes by category label and detail', () => {

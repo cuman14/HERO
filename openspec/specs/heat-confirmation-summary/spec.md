@@ -68,22 +68,16 @@ CUANDO la pantalla intenta inicializarse
 ENTONCES el sistema redirige a /heat-access
 ```
 
-## REQUISITOS MODIFICADOS
+## REMOVED Requirements
 
-### REQ-HEAT-CONFIRMATION-NAVIGATION (modificado)
+### REQ-HEAT-CONFIRMATION-NAVIGATION (eliminado)
 
-```
-DADO QUE el juez ha seleccionado un atleta en heat-confirmation
-  Y canContinue() es true
+**Reason**: The "Continuar" button is removed. Navigation now happens directly from card clicks — no intermediate "select → continue" step.
+**Migration**: All navigation previously triggered by "Continuar" is replaced by direct card-click navigation. See REQ-HEAT-CONFIRMATION-ARROW-NAVIGATION and REQ-HEAT-CONFIRMATION-SCORED-CLICK below.
 
-CUANDO pulsa "Continuar"
+## MODIFIED Requirements
 
-ENTONCES el sistema navega a /heat-confirmation-summary
-  CON router state: { heatPayload, selectedAthleteId }
-  (ANTES navegaba directamente a /scoring)
-```
-
-### REQ-HEAT-CONFIRMATION-SCORED-INDICATOR (nuevo)
+### REQ-HEAT-CONFIRMATION-SCORED-INDICATOR (modificado)
 
 ```
 DADO QUE la pantalla heat-confirmation se ha cargado con datos del heat
@@ -93,9 +87,11 @@ CUANDO el sistema consulta los scores ya enviados para este heat
 
 ENTONCES dichos atletas muestran un badge verde "Listo"
   Y el badge indica que el score ya fue registrado
+  Y se muestra un icono de ojo (👁) en la parte derecha de la tarjeta
+  Y la tarjeta tiene un borde de acento (emerald) para distinguir visualmente
 ```
 
-### REQ-HEAT-CONFIRMATION-SCORED-CLICK (nuevo)
+### REQ-HEAT-CONFIRMATION-SCORED-CLICK (modificado)
 
 ```
 DADO QUE un atleta en heat-confirmation tiene scored = true
@@ -103,10 +99,14 @@ DADO QUE un atleta en heat-confirmation tiene scored = true
 
 CUANDO el juez pulsa sobre ese atleta
 
-ENTONCES el sistema navega directamente a /scoring/:heatAthleteId/summary
-  Y no se añade a la selección (no toggle)
-  (permite ver el resumen del score ya registrado)
+ENTONCES el sistema navega directamente a /scoring/:heatAthleteId/summary?readonly=true
+  Y no hay selección previa (no toggle, no "Continuar")
+  (permite ver el resumen del score ya registrado en modo lectura)
 ```
+
+## ADDED Requirements
+
+### Requirement: REQ-HEAT-CONFIRMATION-ARROW-NAVIGATION
 
 ```
 DADO QUE un atleta en heat-confirmation tiene scored = false
@@ -114,9 +114,34 @@ DADO QUE un atleta en heat-confirmation tiene scored = false
 
 CUANDO el juez pulsa sobre ese atleta
 
-ENTONCES el atleta se marca/desmarca como seleccionado (toggle)
-  Y no hay navegación directa
-  (flujo existente: seleccionar → Continuar → scoring)
+ENTONCES el sistema navega directamente a /heat-confirmation-summary
+  CON queryParams: { heatCode, athleteId }
+  Y no hay selección previa (no toggle, no "Continuar")
+  (flujo nuevo: card click directo al guardrail de confirmación)
+```
+
+### Requirement: REQ-HEAT-CONFIRMATION-ARROW-ICON
+
+```
+DADO QUE la pantalla heat-confirmation se ha cargado con datos del heat
+
+CUANDO un atleta tiene scored = false
+
+ENTONCES la tarjeta del atleta muestra un icono de flecha (→) en la parte derecha
+  Y el icono usa el componente lib-icon con name="arrow-right"
+  (el icono indica que se puede iniciar el scoring)
+```
+
+### Requirement: REQ-HEAT-CONFIRMATION-SELECTION-REMOVED
+
+```
+DADO QUE la pantalla heat-confirmation carga atletas
+
+CUANDO se renderiza cada tarjeta
+
+ENTONCES no hay checkbox de selección
+  Y selectedId, canContinue, toggleSelection no existen
+  Y el footer no muestra botón "Continuar"
 ```
 
 ## REQUISITOS MODIFICADOS (score-summary-screen change)

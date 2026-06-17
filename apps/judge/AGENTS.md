@@ -75,13 +75,14 @@ apps/judge/src/app/features/scoring/
 - `disputed` — reclamación
 - `void` — anulado
 
-## Heat confirmation — scored indicator
+## Heat confirmation — contextual arrow/eye icons
 
 - `getHeatConfirmationData()` en heat repository combina fetch del heat + atletas + scores submitted.
 - `HeatConfirmationAthlete.scored` se resuelve cotejando `athlete_id`/`team_id` de scores contra `heat_athletes`.
-- `AthleteCardComponent` tiene input `scored: boolean` y muestra badge "Listo" si es true.
-- Click en atleta scored → navega a `/scoring/:heatAthleteId/summary` (SummaryPage modo lectura).
-- Click en atleta no-scored → toggle selección (flujo existente para ir a scoring).
+- `AthleteCardComponent` tiene input `scored: boolean`. Muestra badge "Listo" + icono ojo + borde emerald si es true.
+- Click en atleta scored → navega a `/scoring/:heatAthleteId/summary?readonly=true` (SummaryPage modo lectura).
+- Click en atleta no-scored → navega directamente a `/heat-confirmation-summary?heatCode=X&athleteId=Y`.
+- Footer con botón "Continuar" y lógica de selección (`selectedId`, `canContinue`, `toggleSelection`) eliminados — toda la navegación es directa desde las tarjetas.
 
 ## Score summary — post-finalize navigation
 
