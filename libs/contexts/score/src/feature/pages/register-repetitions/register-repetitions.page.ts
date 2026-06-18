@@ -40,14 +40,21 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
     const movements = this.facade.movements();
     const activeMovementIndex = this.facade.currentMovementIndex();
     const currentRepsValue = this.facade.currentRepetitionCount().value;
-    return movements.map((movement, movementIndex) =>
-      mapMovementToStackItem(
+    const summaryMap = new Map(
+      this.facade.movementSummaryItems().map((s) => [s.movementId, s.confirmedRepetitions]),
+    );
+    return movements.map((movement, movementIndex) => {
+      const repsForMovement =
+        movementIndex === activeMovementIndex
+          ? currentRepsValue
+          : (summaryMap.get(movement.id) ?? 0);
+      return mapMovementToStackItem(
         movement,
         movementIndex,
         activeMovementIndex,
-        currentRepsValue,
-      ),
-    );
+        repsForMovement,
+      );
+    });
   });
 
   protected readonly upcomingItems = computed(() =>
@@ -84,12 +91,13 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
     void this.router.navigate(['/heat-confirmation']);
   }
 
-  onConfirm(): void {
-    this.facade.submitRepetitionCount();
+  async onConfirm(): Promise<void> {
+    const isLastMovement = !this.facade.canNavigateNext();
+    await this.facade.submitRepetitionCount();
     this.inputBuffer.reset();
-    if (!this.facade.canNavigateNext()) {
+    if (isLastMovement) {
       this.facade.recordElapsedTime(this.elapsedSeconds());
-      void this.router.navigate(['summary'], { relativeTo: this.route });
+      await this.router.navigate(['summary'], { relativeTo: this.route });
     }
   }
 }

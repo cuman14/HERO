@@ -20,15 +20,12 @@ export function mapMovementToStackItem(
   else if (movementIndex === activeMovementIndex) status = 'active';
   else status = 'upcoming';
 
-  const repsForMovement =
-    movementIndex === activeMovementIndex ? currentRepsValue : 0;
-
   return {
     id: movement.id,
     name: movement.name,
     description: movement.description,
     targetReps: movement.targetReps,
-    currentReps: repsForMovement,
+    currentReps: currentRepsValue,
     status,
     roundLabel: movement.description,
     roundIndex: movementIndex,

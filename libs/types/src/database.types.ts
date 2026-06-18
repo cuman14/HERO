@@ -49,6 +49,7 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           last_name: string | null
+          level_id: string | null
           name: string
           phone: string | null
           status: Database["public"]["Enums"]["athlete_status"]
@@ -63,6 +64,7 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           last_name?: string | null
+          level_id?: string | null
           name: string
           phone?: string | null
           status?: Database["public"]["Enums"]["athlete_status"]
@@ -77,12 +79,21 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           last_name?: string | null
+          level_id?: string | null
           name?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["athlete_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "athletes_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "levels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {

@@ -43,6 +43,12 @@ export interface RepetitionRecordProps {
   createdAt: Date;
 }
 
+export interface SessionRecordEntry {
+  movementId: string;
+  count: number;
+  confirmed: boolean;
+}
+
 export class RepetitionRecord extends Entity<RepetitionRecordProps> {
   get movementId(): string {
     return this.props.movementId;

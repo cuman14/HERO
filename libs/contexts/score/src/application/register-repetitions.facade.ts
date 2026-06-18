@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, OnDestroy } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { SUPABASE_CLIENT } from '@hero/core';
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { AthleteHeat } from '../domain/athlete-heat.model';
@@ -11,6 +11,11 @@ import { injectScoreErrorHandler } from '@hero/core';
 import { MOVEMENT_REPOSITORY } from '../infrastructure/movement.repository';
 import { REPETITION_RECORD_REPOSITORY } from '../infrastructure/repetition-record.repository';
 import { RegisterRepetitionsStore } from './register-repetitions.store';
+import {
+  clearScoreSession,
+  loadScoreSession,
+  saveScoreSession,
+} from '../infrastructure/score-session-storage';
 
 interface HeatAthleteContext {
   id: string;
@@ -31,7 +36,7 @@ interface HeatAthleteContext {
     bib_number: string | null;
     level_id: string;
   } | null;
-  athlete: { id: string; name: string; bib_number: string | null } | null;
+  athlete: { id: string; name: string; bib_number: string | null; level_id: string | null } | null;
 }
 
 interface ScoreRow {
@@ -40,7 +45,7 @@ interface ScoreRow {
 }
 
 @Injectable()
-export class RegisterRepetitionsFacade implements OnDestroy {
+export class RegisterRepetitionsFacade {
   readonly store = new RegisterRepetitionsStore();
 
   private readonly supabase = inject<SupabaseClient>(SUPABASE_CLIENT);
@@ -79,8 +84,6 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     });
   });
 
-  private unsubscribeRealtime: (() => void) | null = null;
-
   /** Loads heat data for the given `heatAthleteId` from Supabase. */
   loadHeat(heatAthleteId: string): void {
     this.store.setLoading(true);
@@ -99,7 +102,7 @@ export class RegisterRepetitionsFacade implements OnDestroy {
             wod:wods!heats_wod_id_fkey(id, name, type)
           ),
           team:teams!heat_athletes_team_id_fkey(id, name, bib_number, level_id),
-          athlete:athletes!heat_athletes_athlete_id_fkey(id, name, bib_number)
+          athlete:athletes!heat_athletes_athlete_id_fkey(id, name, bib_number, level_id)
         `,
         )
         .eq('id', heatAthleteId)
@@ -116,29 +119,32 @@ export class RegisterRepetitionsFacade implements OnDestroy {
       const subjectId = context.team_id ?? context.athlete_id ?? '';
       const athleteHeat = this.buildAthleteHeat(context, subjectId);
 
-      const [movements, existingRecords, scoreId] = await Promise.all([
-        this.movementRepo.findByHeat(context.heat_id),
-        this.repRecordRepo.findByHeatAndAthlete(context.heat_id, subjectId),
-        this.findOrCreateScore(context, subjectId),
-      ]);
+      const movements = await this.movementRepo.findByHeat(context.heat_id);
 
+      const isTeam = context.team_id !== null;
+      const levelId = context.team?.level_id ?? context.athlete?.level_id ?? '';
+      const wodId = context.heat.wod_id;
+
+      const sessionData = loadScoreSession(heatAthleteId);
       const initialRecords = this.mergeRecordsWithMovements(
-        existingRecords,
+        sessionData?.records ?? [],
         movements,
         subjectId,
         context.heat_id,
         context.judge_id ?? '',
-        scoreId,
       );
 
-      this.store.loadHeatData(athleteHeat, movements, initialRecords, scoreId);
-
-      this.unsubscribeRealtime?.();
-      this.unsubscribeRealtime = this.repRecordRepo.subscribe(
-        context.heat_id,
-        subjectId,
-        (updated) =>
-          this.store.loadHeatData(athleteHeat, movements, updated, scoreId),
+      this.store.loadHeatData(
+        athleteHeat,
+        movements,
+        initialRecords,
+        undefined,
+        sessionData?.currentMovementIndex,
+        sessionData?.elapsedSeconds,
+        heatAthleteId,
+        wodId,
+        levelId,
+        isTeam,
       );
     } catch (err) {
       const message = `Failed to load heat data: ${String(err)}`;
@@ -167,63 +173,38 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     });
   }
 
-  private async findOrCreateScore(
-    ctx: HeatAthleteContext,
-    subjectId: string,
-  ): Promise<string> {
-    const { data: existing } = await this.supabase
-      .from('scores')
-      .select('id, value')
-      .eq('heat_id', ctx.heat_id)
-      .or(`athlete_id.eq.${subjectId},team_id.eq.${subjectId}`)
-      .maybeSingle<ScoreRow>();
-
-    if (existing) return existing.id;
-
-    const levelId = ctx.team?.level_id ?? '';
-    const isTeam = !!ctx.team_id;
-
-    const { data: created, error } = await this.supabase
-      .from('scores')
-      .insert({
-        heat_id: ctx.heat_id,
-        ...(isTeam ? { team_id: subjectId } : { athlete_id: subjectId }),
-        wod_id: ctx.heat.wod_id,
-        level_id: levelId,
-        judge_id: ctx.judge_id,
-        value: { movement_reps: {} },
-        status: 'draft',
-      })
-      .select('id')
-      .single<{ id: string }>();
-
-    if (error || !created)
-      throw new Error(`Cannot create score: ${error?.message}`);
-    return created.id;
-  }
-
   private mergeRecordsWithMovements(
-    existing: RepetitionRecord[],
+    entries: { movementId: string; count: number; confirmed: boolean }[],
     movements: { id: string }[],
     athleteId: string,
     heatId: string,
     judgeId: string,
-    scoreId: string,
   ): RepetitionRecord[] {
-    const byMovementId = new Map(existing.map((r) => [r.movementId, r]));
-    return movements.map(
-      (m) =>
-        byMovementId.get(m.id) ??
-        RepetitionRecord.create(`${scoreId}-${m.id}`, {
+    const byMovementId = new Map(entries.map((e) => [e.movementId, e]));
+    return movements.map((m) => {
+      const entry = byMovementId.get(m.id);
+      const id = `session-${m.id}`;
+      if (entry) {
+        return RepetitionRecord.create(id, {
           movementId: m.id,
           athleteId,
           heatId,
-          count: RepetitionCount.zero(),
+          count: RepetitionCount.create(entry.count),
           judgeId,
-          confirmed: false,
+          confirmed: entry.confirmed,
           createdAt: new Date(),
-        }),
-    );
+        });
+      }
+      return RepetitionRecord.create(id, {
+        movementId: m.id,
+        athleteId,
+        heatId,
+        count: RepetitionCount.zero(),
+        judgeId,
+        confirmed: false,
+        createdAt: new Date(),
+      });
+    });
   }
 
   /** Sets the repetition count for the current movement to an absolute value. */
@@ -254,37 +235,37 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.updateRepetitionCount(movement.id, current.decrement());
   }
 
-  /** Confirms the current repetition record, persists via repository, and navigates to the next movement. */
-  submitRepetitionCount(): void {
+  /** Confirms the current repetition record, persists to sessionStorage, and navigates to the next movement. */
+  async submitRepetitionCount(): Promise<void> {
     const movement = this.currentMovement();
     if (!movement) return;
     this.store.setSubmitting(true);
 
-    const record = this.store.currentRepetitionRecord();
-    const scoreId = this.store.scoreId();
-
-    if (!record || !scoreId) {
-      const error = new Error('Cannot submit repetition: missing score context');
-      this.store.setError(error.message);
-      this.errorHandler?.handleError(error);
+    try {
+      this.store.confirmRepetitionRecord(movement.id);
+      this.store.navigateNext();
+      this.persistToSession();
+    } catch {
+      this.store.setError('Failed to submit repetition count');
+    } finally {
       this.store.setSubmitting(false);
-      return;
     }
+  }
 
-    this.repRecordRepo
-      .save(record.confirm(), scoreId)
-      .then(() => {
-        this.store.confirmRepetitionRecord(movement.id);
-        this.store.navigateNext();
-      })
-      .catch((err) => {
-        const message = extractErrorMessage(err);
-        this.store.setError(message);
-        this.errorHandler?.handleError(err);
-      })
-      .finally(() => {
-        this.store.setSubmitting(false);
-      });
+  private persistToSession(): void {
+    const haId = this.store.heatAthleteId();
+    if (!haId) return;
+    const records = this.store.repetitionRecords();
+    const entries = Array.from(records.values()).map((r) => ({
+      movementId: r.movementId,
+      count: r.count.value,
+      confirmed: r.confirmed,
+    }));
+    saveScoreSession(haId, {
+      records: entries,
+      currentMovementIndex: this.store.currentMovementIndex(),
+      elapsedSeconds: this.store.elapsedSeconds(),
+    });
   }
 
   /** Navigates directly to the movement at the given 0-based index. */
@@ -307,11 +288,11 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.setElapsedSeconds(seconds);
   }
 
-  /** Finalizes the score by marking it submitted in Supabase and stores the athlete signature. */
+  /** Finalizes the score by persisting all records to Supabase, marking it submitted, and clearing sessionStorage. */
   async finalizeScore(signature: string): Promise<void> {
-    const scoreId = this.store.scoreId();
-    if (!scoreId) {
-      this.store.setError('No score to finalize');
+    const athleteHeat = this.store.athleteHeat();
+    if (!athleteHeat) {
+      this.store.setError('No athlete heat context');
       return;
     }
 
@@ -319,13 +300,52 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     this.store.setError(null);
 
     try {
-      const { error } = await this.supabase
-        .from('scores')
-        .update({ status: 'submitted', value: { signature } })
-        .eq('id', scoreId);
+      const movementReps: Record<
+        string,
+        { reps: number; confirmed: boolean }
+      > = {};
+      for (const [movementId, record] of this.store.repetitionRecords()) {
+        movementReps[movementId] = {
+          reps: record.count.value,
+          confirmed: record.confirmed,
+        };
+      }
 
-      if (error) throw error;
-      this.unsubscribeRealtime?.();
+      const { data: existing } = await this.supabase
+        .from('scores')
+        .select('id')
+        .eq('heat_id', athleteHeat.heatId)
+        .or(
+          `athlete_id.eq.${athleteHeat.athleteId},team_id.eq.${athleteHeat.athleteId}`,
+        )
+        .maybeSingle<{ id: string }>();
+
+      if (existing) {
+        const { error } = await this.supabase
+          .from('scores')
+          .update({
+            value: { movement_reps: movementReps, signature },
+            status: 'submitted',
+          })
+          .eq('id', existing.id);
+
+        if (error) throw error;
+      } else {
+        const isTeam = this.store.isTeam();
+        const { error } = await this.supabase.from('scores').insert({
+          heat_id: athleteHeat.heatId,
+          wod_id: this.store.wodId()!,
+          level_id: this.store.levelId()!,
+          athlete_id: isTeam ? null : athleteHeat.athleteId,
+          team_id: isTeam ? athleteHeat.athleteId : null,
+          value: { movement_reps: movementReps, signature },
+          status: 'submitted',
+        });
+
+        if (error) throw error;
+      }
+
+      clearScoreSession(this.store.heatAthleteId()!);
     } catch (err) {
       const message = `Failed to finalize score: ${extractErrorMessage(err)}`;
       this.store.setError(message);
@@ -333,10 +353,6 @@ export class RegisterRepetitionsFacade implements OnDestroy {
     } finally {
       this.store.setSubmitting(false);
     }
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribeRealtime?.();
   }
 }
 

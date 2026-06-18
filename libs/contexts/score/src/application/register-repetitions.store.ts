@@ -12,6 +12,10 @@ export interface RegisterRepetitionsState {
   currentMovementIndex: number;
   repetitionRecords: Map<string, RepetitionRecord>;
   scoreId: string | null;
+  heatAthleteId: string | null;
+  wodId: string | null;
+  levelId: string | null;
+  isTeam: boolean;
   elapsedSeconds: number;
   isLoading: boolean;
   isSubmitting: boolean;
@@ -25,6 +29,10 @@ export class RegisterRepetitionsStore {
     currentMovementIndex: 0,
     repetitionRecords: new Map(),
     scoreId: null,
+    heatAthleteId: null,
+    wodId: null,
+    levelId: null,
+    isTeam: false,
     elapsedSeconds: 0,
     isLoading: false,
     isSubmitting: false,
@@ -33,6 +41,10 @@ export class RegisterRepetitionsStore {
 
   readonly athleteHeat = computed(() => this.state().athleteHeat);
   readonly scoreId = computed(() => this.state().scoreId);
+  readonly heatAthleteId = computed(() => this.state().heatAthleteId);
+  readonly wodId = computed(() => this.state().wodId);
+  readonly levelId = computed(() => this.state().levelId);
+  readonly isTeam = computed(() => this.state().isTeam);
   readonly movements = computed(() => this.state().movements);
   readonly repetitionRecords = computed(() => this.state().repetitionRecords);
   readonly currentMovementIndex = computed(
@@ -116,6 +128,12 @@ export class RegisterRepetitionsStore {
     movements: Movement[],
     repetitionRecords: RepetitionRecord[],
     scoreId?: string,
+    sessionMovementIndex?: number,
+    sessionElapsedSeconds?: number,
+    heatAthleteId?: string,
+    wodId?: string,
+    levelId?: string,
+    isTeam?: boolean,
   ): void {
     this.state.update((state) => {
       const recordsMap = new Map(state.repetitionRecords);
@@ -124,8 +142,12 @@ export class RegisterRepetitionsStore {
       }
 
       const isNewAthlete = !state.athleteHeat || state.athleteHeat.athleteId !== athleteHeat.athleteId;
-      const currentMovementIndex = isNewAthlete ? 0 : state.currentMovementIndex;
-      const elapsedSeconds = isNewAthlete ? 0 : state.elapsedSeconds;
+      const currentMovementIndex =
+        sessionMovementIndex ??
+        (isNewAthlete ? 0 : state.currentMovementIndex);
+      const elapsedSeconds =
+        sessionElapsedSeconds ??
+        (isNewAthlete ? 0 : state.elapsedSeconds);
 
       return {
         ...state,
@@ -134,6 +156,10 @@ export class RegisterRepetitionsStore {
         currentMovementIndex,
         repetitionRecords: recordsMap,
         scoreId: scoreId ?? state.scoreId,
+        heatAthleteId: heatAthleteId ?? state.heatAthleteId,
+        wodId: wodId ?? state.wodId,
+        levelId: levelId ?? state.levelId,
+        isTeam: isTeam ?? state.isTeam,
         elapsedSeconds,
         isLoading: false,
         error: null,

@@ -1,4 +1,5 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
+import { MovementHeaderComponent } from './movement-header.component';
 
 export interface MovementStackItem {
   id: string;
@@ -14,75 +15,102 @@ export interface MovementStackItem {
 @Component({
   selector: 'lib-movement-stack-card',
   standalone: true,
+  imports: [MovementHeaderComponent],
   template: `
     <div class="relative w-full max-w-md mx-auto mt-12 mb-4">
-      <!-- Floating Timer Chip -->
+      <lib-movement-header
+        [timerDisplay]="timerDisplay()"
+        [showToggle]="completedItems().length > 0"
+        [expanded]="expanded()"
+        (toggleExpanded)="toggleExpanded()"
+      />
+
+      <!-- Expanded Completed Movements List -->
       <div
-        class="absolute -top-10 left-1/2 -translate-x-1/2 z-[40] flex items-center gap-1.5 bg-primary px-4 py-1.5 rounded-full shadow-lg shadow-primary/30 border border-white/20"
+        id="completedList"
+        class="overflow-hidden transition-all duration-300 ease-out"
+        [class.max-h-0]="!expanded()"
+        [class.max-h-96]="expanded()"
+        [class.opacity-0]="!expanded()"
+        [class.opacity-100]="expanded()"
       >
-        <span class="material-symbols-outlined text-white text-[16px]"
-          >timer</span
-        >
-        <span
-          class="text-white font-black text-sm tabular-nums tracking-wider"
-          >{{ timerDisplay() }}</span
-        >
+        <div class="space-y-2 mt-2">
+          @for (card of completedItems(); track card.id) {
+            <div class="flex items-center gap-3 px-4 py-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+              <span
+                class="material-symbols-outlined text-emerald-500 text-base shrink-0"
+                style="font-variation-settings: 'FILL' 1;"
+                >check_circle</span
+              >
+              <div class="flex-1 min-w-0">
+                <span class="text-sm font-semibold text-slate-900 truncate block"
+                  >{{ card.name }}</span
+                >
+                <span class="text-xs text-slate-500"
+                  >{{ card.currentReps }} / {{ card.targetReps }} reps  •  {{ card.roundLabel }}</span
+                >
+              </div>
+            </div>
+          }
+        </div>
       </div>
 
       <!-- Stacked Card -2 (oldest completed) — track by id forces recreation → animation -->
-      @for (card of stackedCard2AsArray(); track card.id) {
-        <div
-          class="absolute inset-x-0 mx-auto w-full bg-slate-100 border border-slate-200 rounded-2xl p-3 flex justify-between items-center card-to-stack2"
-          style="z-index: 10;"
-        >
-          <div class="flex flex-col">
-            <span
-              class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-              >{{ card.roundLabel }}</span
-            >
-            <span class="text-sm text-slate-600 font-semibold"
-              >{{ card.targetReps }} {{ card.name }}</span
-            >
+      @if (!expanded()) {
+        @for (card of stackedCard2AsArray(); track card.id) {
+          <div
+            class="absolute inset-x-0 mx-auto w-full bg-slate-100 border border-slate-200 rounded-2xl p-3 flex justify-between items-center card-to-stack2"
+            style="z-index: 10;"
+          >
+            <div class="flex flex-col">
+              <span
+                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                >{{ card.roundLabel }}</span
+              >
+              <span class="text-sm text-slate-600 font-semibold"
+                >{{ card.targetReps }} {{ card.name }}</span
+              >
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] font-bold text-emerald-600"
+                >COMPLETED</span
+              >
+              <span
+                class="material-symbols-outlined text-emerald-500 text-sm"
+                style="font-variation-settings: 'FILL' 1;"
+                >check_circle</span
+              >
+            </div>
           </div>
-          <div class="flex items-center gap-1">
-            <span class="text-[10px] font-bold text-emerald-600"
-              >COMPLETED</span
-            >
-            <span
-              class="material-symbols-outlined text-emerald-500 text-sm"
-              style="font-variation-settings: 'FILL' 1;"
-              >check_circle</span
-            >
-          </div>
-        </div>
-      }
+        }
 
-      <!-- Stacked Card -1 (most recent completed) — track by id forces recreation → animation -->
-      @for (card of stackedCard1AsArray(); track card.id) {
-        <div
-          class="absolute inset-x-0 mx-auto w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 flex justify-between items-center shadow-sm card-to-stack1"
-          style="z-index: 20;"
-        >
-          <div class="flex flex-col">
-            <span
-              class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-              >{{ card.roundLabel }}</span
-            >
-            <span class="text-sm text-slate-600 font-semibold"
-              >{{ card.targetReps }} {{ card.name }}</span
-            >
+        <!-- Stacked Card -1 (most recent completed) — track by id forces recreation → animation -->
+        @for (card of stackedCard1AsArray(); track card.id) {
+          <div
+            class="absolute inset-x-0 mx-auto w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 flex justify-between items-center shadow-sm card-to-stack1"
+            style="z-index: 20;"
+          >
+            <div class="flex flex-col">
+              <span
+                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                >{{ card.roundLabel }}</span
+              >
+              <span class="text-sm text-slate-600 font-semibold"
+                >{{ card.targetReps }} {{ card.name }}</span
+              >
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] font-bold text-emerald-600"
+                >COMPLETED</span
+              >
+              <span
+                class="material-symbols-outlined text-emerald-500 text-sm"
+                style="font-variation-settings: 'FILL' 1;"
+                >check_circle</span
+              >
+            </div>
           </div>
-          <div class="flex items-center gap-1">
-            <span class="text-[10px] font-bold text-emerald-600"
-              >COMPLETED</span
-            >
-            <span
-              class="material-symbols-outlined text-emerald-500 text-sm"
-              style="font-variation-settings: 'FILL' 1;"
-              >check_circle</span
-            >
-          </div>
-        </div>
+        }
       }
 
       <!-- Active Card — track by id forces recreation on movement change → entrance animation -->
@@ -341,4 +369,11 @@ export class MovementStackCardComponent {
     const circumference = 125.6;
     return circumference - (pct / 100) * circumference;
   });
+
+  expanded = signal(false);
+
+  toggleExpanded = (): void => {
+    this.expanded.set(!this.expanded());
+  };
+
 }

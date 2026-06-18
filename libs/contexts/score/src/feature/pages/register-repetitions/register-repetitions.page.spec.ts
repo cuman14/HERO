@@ -22,7 +22,8 @@ function createMockFacade(
     updateRepetitionCount: vi.fn(),
     incrementRepetitionCount: vi.fn(),
     decrementRepetitionCount: vi.fn(),
-    submitRepetitionCount: vi.fn(),
+    movementSummaryItems: signal([]),
+    submitRepetitionCount: vi.fn().mockResolvedValue(undefined),
     recordElapsedTime: vi.fn(),
     navigateNext: vi.fn(),
     ...overrides,
@@ -150,7 +151,7 @@ describe('RegisterRepetitionsPage', () => {
       heatAthleteId: 'ha-test',
     });
 
-    component.onConfirm();
+    await component.onConfirm();
 
     expect(facade.submitRepetitionCount).toHaveBeenCalled();
     expect(inputBuffer.reset).toHaveBeenCalled();
@@ -167,7 +168,7 @@ describe('RegisterRepetitionsPage', () => {
 
     component.ngOnInit();
     component.elapsedSeconds.set(125);
-    component.onConfirm();
+    await component.onConfirm();
 
     expect(facadeRef.recordElapsedTime).toHaveBeenCalledWith(125);
     expect(router.navigate).toHaveBeenCalledWith(['summary'], {
