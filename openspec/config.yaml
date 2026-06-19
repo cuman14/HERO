@@ -70,7 +70,9 @@ rules:
   apply:
     - "Plane: When starting implementation (via openspec instructions apply), transition the matching HERO-X work item to 'In Progress' if not already done, and inform the user: 'Plane work item updated: https://app.plane.so/omg-projects/browse/HERO-XX' (replace XX with the actual sequence_id)."
     - "PONYTAIL AUDIT: After apply completes, run ponytail-audit on the changed code to detect over-engineering, unnecessary abstractions, or bloat. Fix any findings before proceeding."
+    - "Git Branch: Before implementing, create a feature branch named 'feat/<scope>-<description>' from the current state."
 
   archive:
     - "PONYTAIL REVIEW: Before archive, run ponytail-review on the diff to verify maximum simplicity — no speculative abstractions, no unused flexibility, no reinventing stdlib."
     - "Plane: On archive, transition the matching HERO-X work item to 'Done' using plane_list_states to find the correct state UUID, and inform the user: 'Plane work item updated: https://app.plane.so/omg-projects/browse/HERO-XX → Done' (replace XX with the actual sequence_id)."
+    - "PR: Delegate to pr-buddy agent (task tool) to create a Pull Request targeting 'main' using the existing feature branch. Provide branch name and commit context."
