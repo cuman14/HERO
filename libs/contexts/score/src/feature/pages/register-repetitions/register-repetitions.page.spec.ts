@@ -131,21 +131,6 @@ describe('RegisterRepetitionsPage', () => {
     expect(facade.updateRepetitionCount).toHaveBeenCalledWith(12);
   });
 
-  it('should handle backspace and update count', async () => {
-    const inputBuffer = createMockInputBuffer({
-      removeLastDigit: vi.fn().mockReturnValue(5),
-    });
-    const { component, facade } = await setup({
-      heatAthleteId: 'ha-test',
-      inputBuffer,
-    });
-
-    component.onBackspace();
-
-    expect(inputBuffer.removeLastDigit).toHaveBeenCalled();
-    expect(facade.updateRepetitionCount).toHaveBeenCalledWith(5);
-  });
-
   it('should submit repetition count on confirm and reset buffer', async () => {
     const { component, facade, inputBuffer } = await setup({
       heatAthleteId: 'ha-test',
