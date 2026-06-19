@@ -7,7 +7,6 @@ import { ErrorHandlingService } from './core/error-handling/error-handling.servi
   imports: [RouterModule, ErrorModalComponent],
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrl: './app.css',
 })
 export class App {
   protected readonly errorHandling = inject(ErrorHandlingService);
