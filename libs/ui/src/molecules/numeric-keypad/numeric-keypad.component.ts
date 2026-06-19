@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'lib-numeric-keypad',
@@ -20,13 +20,14 @@ import { Component, output } from '@angular/core';
                 <span class="text-[8px] opacity-0"> </span>
               }
             </button>
-          } @else if (key.type === 'backspace') {
+          } @else if (key.type === 'complete') {
             <button
-              class="keypad-btn w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center transition-all active:scale-[0.92] active:bg-red-100"
-              (click)="backspacePressed.emit()"
-              aria-label="Backspace"
+              class="keypad-btn col-span-2 w-full h-16 rounded-full bg-emerald-500 flex flex-col items-center justify-center transition-all shadow-lg shadow-emerald-500/40 active:scale-[0.95]"
+              (click)="completePressed.emit(targetReps())"
+              aria-label="Complete"
             >
-              <span class="material-symbols-outlined text-red-500 text-2xl">backspace</span>
+              <span class="text-[9px] font-bold text-white leading-none">COMPLETE</span>
+              <span class="text-lg font-black text-white leading-tight">{{ targetReps() }}</span>
             </button>
           } @else if (key.type === 'confirm') {
             <button
@@ -49,10 +50,12 @@ import { Component, output } from '@angular/core';
 })
 export class NumericKeypadComponent {
   digitPressed = output<string>();
-  backspacePressed = output<void>();
   confirmPressed = output<void>();
+  completePressed = output<number>();
 
-  readonly keys: { value: string; label?: string; type: 'digit' | 'backspace' | 'confirm' }[] = [
+  targetReps = input(0);
+
+  readonly keys: { value: string; label?: string; type: 'digit' | 'confirm' | 'complete' }[] = [
     { value: '1', type: 'digit' },
     { value: '2', label: 'abc', type: 'digit' },
     { value: '3', label: 'def', type: 'digit' },
@@ -62,8 +65,7 @@ export class NumericKeypadComponent {
     { value: '7', label: 'pqrs', type: 'digit' },
     { value: '8', label: 'tuv', type: 'digit' },
     { value: '9', label: 'wxyz', type: 'digit' },
-    { value: 'backspace', type: 'backspace' },
-    { value: '0', type: 'digit' },
+    { value: 'complete', type: 'complete' },
     { value: 'confirm', type: 'confirm' },
   ];
 }

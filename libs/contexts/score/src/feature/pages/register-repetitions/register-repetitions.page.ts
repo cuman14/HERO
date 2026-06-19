@@ -82,13 +82,13 @@ export class RegisterRepetitionsPage implements OnInit, OnDestroy {
     if (parsedValue !== null) this.facade.updateRepetitionCount(parsedValue);
   }
 
-  onBackspace(): void {
-    const parsedValue = this.inputBuffer.removeLastDigit();
-    this.facade.updateRepetitionCount(parsedValue);
-  }
-
   onBack(): void {
     void this.router.navigate(['/heat-confirmation']);
+  }
+
+  async onComplete(targetReps: number): Promise<void> {
+    this.facade.updateRepetitionCount(targetReps);
+    await this.onConfirm();
   }
 
   async onConfirm(): Promise<void> {
