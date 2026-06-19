@@ -143,6 +143,8 @@ Project-specific subagents. Delegate to them via `task` tool when their domain m
 
 Invoke these skills when relevant — they encode patterns this repo follows:
 
+- `ponytail` — **Always active by default** at `full` intensity. Enforces the laziest correct solution: standard library over custom code, native platform features over dependencies, delete before add. Questions whether the task exists at all (YAGNI). Triggers automatically on any code generation or modification — always optimize for minimal complexity.
+
 - `angular-component` — building/refactoring Angular 20+ standalone components (signals, OnPush, host bindings).
 - `angular-forms` — signal-based forms.
 - `angular-testing` — Vitest + TestBed patterns for signal components.
