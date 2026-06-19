@@ -109,8 +109,9 @@
   @if (facade.movements().length > 0) {
     <lib-numeric-keypad
       (digitPressed)="onDigit($event)"
-      (backspacePressed)="onBackspace()"
       (confirmPressed)="onConfirm()"
+      [targetReps]="facade.currentMovement()?.targetReps ?? 0"
+      (completePressed)="onComplete($event)"
     />
   }
 </div>
