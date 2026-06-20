@@ -38,7 +38,7 @@ jobs:
       - name: Run Lighthouse CI
         run: npx lhci autorun --upload.target=temporary-public-storage
         env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Lighthouse report as artifact
         if: always()
