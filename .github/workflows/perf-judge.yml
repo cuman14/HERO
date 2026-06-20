@@ -47,7 +47,7 @@ jobs:
           cd dist/apps/judge
           DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           echo "$DEPLOY_OUTPUT"
-          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https?://[^\s]+')
+          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https?://[a-zA-Z0-9.-]+\.vercel\.app' | head -1)
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
 
