@@ -51,7 +51,7 @@ jobs:
           echo "Deployed to: $DEPLOY_URL"
 
       - name: Run Lighthouse CI against Vercel preview
-        run: npx lhci autorun --upload.target=temporary-public-storage --url=${{ steps.deploy.outputs.url }}
+        run: npx lhci autorun --collect.url=${{ steps.deploy.outputs.url }} --collect.startServerCommand= --upload.target=temporary-public-storage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
