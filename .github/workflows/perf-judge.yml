@@ -40,16 +40,14 @@ jobs:
 
       - name: Deploy to Vercel (preview)
         id: deploy
+        env:
+          VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
         run: |
-          mkdir -p dist/apps/judge/.vercel
-          cat > dist/apps/judge/.vercel/project.json << 'EOF'
-          {"projectId":"prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv","orgId":"team_sMmJmobd92vIBFKdJ2KxbtcE"}
-          EOF
           cp apps/judge/vercel.json dist/apps/judge/vercel.json
           cd dist/apps/judge
-          npx vercel --public --yes --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-output.txt
-          cat /tmp/vercel-output.txt
-          DEPLOY_URL=$(grep -oP '(https?://[^\s"]+)\.vercel\.app' /tmp/vercel-output.txt | head -1)
+          DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+          echo "$DEPLOY_OUTPUT"
+          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https?://[^\s]+')
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
 
