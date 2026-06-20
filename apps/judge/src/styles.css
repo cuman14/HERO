@@ -3,6 +3,31 @@
 
 @import "../../../libs/ui/src/theme/hero.css";
 
+/* Self-hosted fonts (PIP-001) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/Inter.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/space-grotesk/SpaceGrotesk.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('/fonts/material-symbols/MaterialSymbolsOutlined.woff2') format('woff2');
+}
+
 @theme {
   /* Override primary with judge violet */
   --color-primary: #8b5cf6;

@@ -3,7 +3,12 @@ import {
   isDevMode,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  PreloadAllModules,
+  provideRouter,
+  withComponentInputBinding,
+  withPreloading,
+} from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideSupabase, SCORE_ERROR_HANDLER } from '@hero/core';
 import { ErrorHandlingService } from './core/error-handling/error-handling.service';
@@ -14,7 +19,11 @@ const env = import.meta.env as Record<string, string | undefined>;
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(appRoutes, withComponentInputBinding()),
+    provideRouter(
+      appRoutes,
+      withComponentInputBinding(),
+      withPreloading(PreloadAllModules),
+    ),
     provideSupabase({
       url: env['NX_PUBLIC_SUPABASE_URL'] ?? '',
       anonKey: env['NX_PUBLIC_SUPABASE_ANON_KEY'] ?? '',
