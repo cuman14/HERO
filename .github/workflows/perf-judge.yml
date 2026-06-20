@@ -12,7 +12,6 @@ permissions:
 
 env:
   VERCEL_ORG_ID: team_sMmJmobd92vIBFKdJ2KxbtcE
-  VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
 
 jobs:
   lighthouse:
@@ -41,29 +40,18 @@ jobs:
 
       - name: Deploy to Vercel (preview)
         id: deploy
-        continue-on-error: true
+        env:
+          VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
         run: |
           cp apps/judge/vercel.json dist/apps/judge/vercel.json
           cd dist/apps/judge
-          npx vercel --prebuilt --public --token=${{ secrets.VERCEL_TOKEN }} --scope=$VERCEL_ORG_ID 2>&1 | tee /tmp/vercel-output.txt
-          DEPLOY_URL=$(grep -oP '(https?://[^\s"]+\.vercel\.app)' /tmp/vercel-output.txt | head -1)
-          if [ -n "$DEPLOY_URL" ]; then
-            echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-            echo "Deployed to: $DEPLOY_URL"
-          else
-            echo "url=failed" >> $GITHUB_OUTPUT
-            echo "Vercel deploy failed, will fallback to localhost"
-          fi
+          vercel --public --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-output.txt
+          DEPLOY_URL=$(grep -oP 'https?://[^\s"]+\.vercel\.app' /tmp/vercel-output.txt | head -1)
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOY_URL"
 
-      - name: Run Lighthouse CI
-        run: |
-          if [ "${{ steps.deploy.outputs.url }}" != "failed" ] && [ -n "${{ steps.deploy.outputs.url }}" ]; then
-            echo "Running LHCI against Vercel preview: ${{ steps.deploy.outputs.url }}"
-            npx lhci autorun --collect.url=${{ steps.deploy.outputs.url }} --collect.startServerCommand= --upload.target=temporary-public-storage
-          else
-            echo "Vercel deploy unavailable, running LHCI against localhost"
-            npx lhci autorun --upload.target=temporary-public-storage
-          fi
+      - name: Run Lighthouse CI against Vercel preview
+        run: npx lhci autorun --collect.url=${{ steps.deploy.outputs.url }} --collect.startServerCommand= --upload.target=temporary-public-storage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
