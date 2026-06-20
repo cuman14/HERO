@@ -10,21 +10,22 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  VERCEL_ORG_ID: team_sMmJmobd92vIBFKdJ2KxbtcE
+  VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
+
 jobs:
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 11
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -32,11 +33,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build judge app (production)
+      - name: Build judge app
         run: npx nx build judge --configuration=production
 
-      - name: Run Lighthouse CI
-        run: npx lhci autorun --upload.target=temporary-public-storage
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Deploy to Vercel (preview)
+        id: deploy
+        run: |
+          cp apps/judge/vercel.json dist/apps/judge/vercel.json
+          cd dist/apps/judge
+          vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=team_sMmJmobd92vIBFKdJ2KxbtcE > /tmp/vercel-output.txt 2>&1
+          cat /tmp/vercel-output.txt
+          DEPLOY_URL=$(grep -oP 'https?://[^\s"]+\.vercel\.app' /tmp/vercel-output.txt | head -1)
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOY_URL"
+
+      - name: Run Lighthouse CI against Vercel preview
+        run: npx lhci autorun --upload.target=temporary-public-storage --url=${{ steps.deploy.outputs.url }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
