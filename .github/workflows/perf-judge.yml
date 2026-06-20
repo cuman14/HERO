@@ -10,10 +10,6 @@ permissions:
   contents: read
   pull-requests: write
 
-env:
-  VERCEL_ORG_ID: team_sMmJmobd92vIBFKdJ2KxbtcE
-  VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
-
 jobs:
   lighthouse:
     name: Lighthouse CI
@@ -36,22 +32,8 @@ jobs:
       - name: Build judge app
         run: npx nx build judge --configuration=production
 
-      - name: Install Vercel CLI
-        run: npm i -g vercel@latest
-
-      - name: Deploy to Vercel (preview)
-        id: deploy
-        run: |
-          cp apps/judge/vercel.json dist/apps/judge/vercel.json
-          cd dist/apps/judge
-          vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=team_sMmJmobd92vIBFKdJ2KxbtcE > /tmp/vercel-output.txt 2>&1
-          cat /tmp/vercel-output.txt
-          DEPLOY_URL=$(grep -oP 'https?://[^\s"]+\.vercel\.app' /tmp/vercel-output.txt | head -1)
-          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-          echo "Deployed to: $DEPLOY_URL"
-
-      - name: Run Lighthouse CI against Vercel preview
-        run: npx lhci autorun --collect.url=${{ steps.deploy.outputs.url }} --collect.startServerCommand= --upload.target=temporary-public-storage
+      - name: Run Lighthouse CI
+        run: npx lhci autorun --upload.target=temporary-public-storage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
