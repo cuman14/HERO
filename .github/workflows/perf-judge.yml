@@ -52,7 +52,14 @@ jobs:
           echo "Deployed to: $DEPLOY_URL"
 
       - name: Run Lighthouse CI against Vercel preview
-        run: npx lhci autorun --collect.url=${{ steps.deploy.outputs.url }} --collect.startServerCommand= --upload.target=temporary-public-storage
+        shell: bash
+        run: |
+          HEADERS='{"x-vercel-protection-bypass":"${{ secrets.VERCEL_BYPASS_SECRET }}"}'
+          npx lhci autorun \
+            --collect.url='${{ steps.deploy.outputs.url }}' \
+            --collect.startServerCommand= \
+            --collect.settings.extraHeaders="$HEADERS" \
+            --upload.target=temporary-public-storage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
