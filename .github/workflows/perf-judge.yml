@@ -1,72 +1,80 @@
-name: Performance - Judge App
+name: Judge Performance
 
 on:
-  pull_request:
+  push:
     branches: [main]
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pull-requests: write
-
-env:
-  VERCEL_ORG_ID: team_sMmJmobd92vIBFKdJ2KxbtcE
+  pull_request:
+    paths:
+      - 'apps/judge/**'
+      - 'libs/**'
 
 jobs:
-  lighthouse:
-    name: Lighthouse CI
+  bundle-analysis:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
 
       - name: Build judge app
         run: npx nx build judge --configuration=production
 
-      - name: Install Vercel CLI
-        run: npm i -g vercel@latest
-
-      - name: Deploy to Vercel (preview)
-        id: deploy
-        env:
-          VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
+      - name: Generate bundle report (visualizer)
         run: |
-          cp apps/judge/vercel.json dist/apps/judge/vercel.json
-          cd dist/apps/judge
-          DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
-          echo "$DEPLOY_OUTPUT"
-          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https?://[a-zA-Z0-9.-]+\.vercel\.app' | head -1)
-          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-          echo "Deployed to: $DEPLOY_URL"
+          mkdir -p perf-reports
+          npx vite-bundle-visualizer --config apps/judge/vite.config.mts \
+            -o perf-reports/bundle-report.html
 
-      - name: Run Lighthouse CI against Vercel preview
-        shell: bash
+      - name: Generate bundle summary
         run: |
-          HEADERS='{"x-vercel-protection-bypass":"${{ secrets.VERCEL_BYPASS_SECRET }}"}'
-          npx lhci autorun \
-            --collect.url='${{ steps.deploy.outputs.url }}' \
-            --collect.startServerCommand= \
-            --collect.settings.extraHeaders="$HEADERS" \
-            --upload.target=temporary-public-storage
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          node << 'EOF'
+            const fs = require('fs');
+            const path = require('path');
+            const zlib = require('zlib');
+            const dir = 'dist/apps/judge/assets';
+            const files = fs.readdirSync(dir).filter(f => /\.(js|css)$/.test(f));
+            let md = '## Bundle Report\n\n| Chunk | Size | Gzip |\n|-------|------|------|\n';
+            let totalRaw = 0, totalGzip = 0;
+            files.sort().forEach(f => {
+              const buf = fs.readFileSync(path.join(dir, f));
+              const rawKB = buf.length / 1024;
+              const gzipKB = zlib.gzipSync(buf).length / 1024;
+              const name = f.replace(/-[a-zA-Z0-9_]+(-[a-z]+)?\.([a-z]+)$/, (m, s, ext) => '-*.' + ext);
+              md += '| ' + name + ' | ' + rawKB.toFixed(1) + ' KB | ' + gzipKB.toFixed(1) + ' KB |\n';
+              totalRaw += rawKB;
+              totalGzip += gzipKB;
+            });
+            md += '| **Total** | **' + totalRaw.toFixed(1) + ' KB** | **' + totalGzip.toFixed(1) + ' KB** |\n';
+            fs.writeFileSync('perf-reports/summary.md', md);
+            console.log(md);
+          EOF
 
-      - name: Upload Lighthouse report as artifact
-        if: always()
+      - name: Upload bundle reports
         uses: actions/upload-artifact@v4
         with:
-          name: lighthouse-report
-          path: .lighthouseci/
-          retention-days: 7
+          name: bundle-report-${{ github.sha }}
+          path: perf-reports/
+          retention-days: 90
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Build judge app
+        run: npx nx build judge --configuration=production
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
