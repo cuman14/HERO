@@ -2,8 +2,6 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "startServerCommand": "npx http-server dist/apps/judge -p 8080 -s",
-      "url": "http://localhost:8080",
       "settings": {
         "headless": true,
         "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu",
@@ -37,10 +35,6 @@
     },
     "upload": {
       "target": "temporary-public-storage"
-    },
-    "server": {
-      "command": "npx http-server dist/apps/judge -p 8080 -s",
-      "port": 8080
     }
   }
 }

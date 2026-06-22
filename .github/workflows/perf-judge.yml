@@ -1,20 +1,27 @@
 name: Judge Performance
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
     paths:
       - 'apps/judge/**'
       - 'libs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  VERCEL_ORG_ID: team_sMmJmobd92vIBFKdJ2KxbtcE
+  VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
 
 jobs:
   bundle-analysis:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: latest
       - uses: actions/setup-node@v4
@@ -66,8 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: latest
       - uses: actions/setup-node@v4
@@ -78,9 +84,29 @@ jobs:
       - name: Build judge app
         run: npx nx build judge --configuration=production
 
-      - name: Run Lighthouse CI
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Deploy to Vercel (preview)
+        id: deploy
         run: |
-          npm install -g @lhci/cli
-          lhci autorun
+          cp apps/judge/vercel.json dist/apps/judge/vercel.json
+          cd dist/apps/judge
+          vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=team_sMmJmobd92vIBFKdJ2KxbtcE > /tmp/vercel-output.txt 2>&1
+          cat /tmp/vercel-output.txt
+          DEPLOY_URL=$(grep -oP 'https?://[^\s"]+\.vercel\.app' /tmp/vercel-output.txt | head -1)
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOY_URL"
+
+      - name: Run Lighthouse CI against Vercel preview
+        run: npx lhci autorun --upload.target=temporary-public-storage --url=${{ steps.deploy.outputs.url }}
         env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7
