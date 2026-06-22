@@ -96,9 +96,13 @@ because it measures with CDN, real compression, and production-like headers.
 **How it works:**
 1. Builds the judge app (`npx nx build judge --configuration=production`)
 2. Copies `apps/judge/vercel.json` to `dist/apps/judge/vercel.json`
-3. Runs `vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=team_sMmJmobd92vIBFKdJ2KxbtcE`
+3. Runs `vercel --token=${{ secrets.VERCEL_TOKEN }}` (no `--scope` flag needed, VERCEL_ORG_ID env var handles it)
 4. Extracts the preview URL from Vercel output
-5. Runs `npx lhci autorun --url=$PREVIEW_URL`
+5. Runs LHCI with CLI flags that override lighthouserc.json:
+   - `--collect.url=$PREVIEW_URL` — target the Vercel preview
+   - `--collect.startServerCommand=` — **explicitly disable** http-server startup
+   - `--collect.settings.extraHeaders='{"x-vercel-protection-bypass":"..."}'` — bypass Vercel password protection
+   - `--upload.target=temporary-public-storage`
 
 **What NOT to do (history — these caused regressions):**
 - ❌ Set `url` in `lighthouserc.json` to `http://localhost:8080`
@@ -107,6 +111,8 @@ because it measures with CDN, real compression, and production-like headers.
 - ❌ Run `lhci autorun` without `--url` flag pointing to Vercel
 - ❌ Use `preset: "lighthouse:no-pbs"` — that preset does not exist
 - ❌ Use any `preset` in `lighthouserc.json` — just use custom assertions
+- ❌ Run `lhci autorun` without `--collect.startServerCommand=` (must explicitly disable local server)
+- ❌ Run LHCI without `--collect.settings.extraHeaders` (Vercel preview has password protection)
 
 The URL is passed via `--url` CLI flag — `lighthouserc.json` should NOT contain
 a static URL, any local server configuration, or any preset. It only holds:

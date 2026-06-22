@@ -14,7 +14,6 @@ permissions:
 
 env:
   VERCEL_ORG_ID: team_sMmJmobd92vIBFKdJ2KxbtcE
-  VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
 
 jobs:
   bundle-analysis:
@@ -89,17 +88,26 @@ jobs:
 
       - name: Deploy to Vercel (preview)
         id: deploy
+        env:
+          VERCEL_PROJECT_ID: prj_fdR9nYPXdOMWgeCoWXkZWkYvNPDv
         run: |
           cp apps/judge/vercel.json dist/apps/judge/vercel.json
           cd dist/apps/judge
-          vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=team_sMmJmobd92vIBFKdJ2KxbtcE > /tmp/vercel-output.txt 2>&1
-          cat /tmp/vercel-output.txt
-          DEPLOY_URL=$(grep -oP 'https?://[^\s"]+\.vercel\.app' /tmp/vercel-output.txt | head -1)
+          DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+          echo "$DEPLOY_OUTPUT"
+          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https?://[a-zA-Z0-9.-]+\.vercel\.app' | head -1)
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
 
       - name: Run Lighthouse CI against Vercel preview
-        run: npx lhci autorun --upload.target=temporary-public-storage --url=${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          HEADERS='{"x-vercel-protection-bypass":"${{ secrets.VERCEL_BYPASS_SECRET }}"}'
+          npx lhci autorun \
+            --collect.url='${{ steps.deploy.outputs.url }}' \
+            --collect.startServerCommand= \
+            --collect.settings.extraHeaders="$HEADERS" \
+            --upload.target=temporary-public-storage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
