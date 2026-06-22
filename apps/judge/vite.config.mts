@@ -18,6 +18,24 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     reportCompressedSize: true,
     target: 'esnext',
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('@supabase') || id.includes('supabase')) {
+              return 'supabase';
+            }
+            if (id.includes('rxjs')) {
+              return 'rxjs';
+            }
+            if (id.includes('@ngrx/signals') || id.includes('@ngrx')) {
+              return 'ngrx';
+            }
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
   server: {
     port: 4200,
