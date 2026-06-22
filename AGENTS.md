@@ -81,13 +81,11 @@ npx nx affected -t build lint test
 ## CI — Judge Performance Workflow
 
 `.github/workflows/perf-judge.yml` runs on pushes/PRs to `main` touching `apps/judge/**` or `libs/**`.
-Triggers on both `push` (for Pages deploy on merge) and `pull_request` (for PR checks).
 
 - **Never use `npm ci`** — this repo uses **pnpm**. Always use `pnpm install --frozen-lockfile`.
 - **Never pin Node 20** — runner default (Node 24+) is fine. `setup-node@v4` with `cache: 'pnpm'`.
-- Three jobs: `bundle-analysis` (vite-bundle-visualizer + gzip sizes as artifact, 90-day retention), `deploy-report` (on `main` pushes only, deploys bundle report to GitHub Pages), and `lighthouse` (LHCI, mobile emulation, 3 runs, assertions in `lighthouserc.json`).
+- Two jobs: `bundle-analysis` (vite-bundle-visualizer + gzip sizes as artifact, 90-day retention) and `lighthouse` (LHCI, mobile emulation, 3 runs, assertions in `lighthouserc.json`).
 - LHCI report uploaded to `temporary-public-storage`. Link appears as PR check.
-- Bundle report published to GitHub Pages at `https://cuman14.github.io/HERO/` on every `main` push.
 
 ### CRITICAL — LHCI runs against Vercel preview, NOT localhost
 
