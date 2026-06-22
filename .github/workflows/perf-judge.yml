@@ -58,7 +58,7 @@ jobs:
             });
             md += '| **Total** | **' + totalRaw.toFixed(1) + ' KB** | **' + totalGzip.toFixed(1) + ' KB** |\n';
             fs.writeFileSync('perf-reports/summary.md', md);
-            console.log(md);
+            fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, md);
           EOF
 
       - name: Upload bundle reports
