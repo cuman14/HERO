@@ -111,6 +111,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract Lighthouse metrics
+        if: always()
+        run: |
+          node << 'EOF'
+            const fs = require('fs');
+            const dir = '.lighthouseci';
+            const files = fs.readdirSync(dir).filter(f => f.startsWith('lhr-') && f.endsWith('.json'));
+            if (!files.length) { console.log('No LHR files found'); process.exit(0); }
+            const lhr = JSON.parse(fs.readFileSync(dir + '/' + files[0], 'utf8'));
+            const audits = lhr.audits;
+            const cat = lhr.categories;
+            const fmt = (v) => typeof v === 'number' ? v.toFixed(1) : 'N/A';
+            const md = '\n## Lighthouse\n\n' +
+              '| Metric | Value |\n|--------|-------|\n' +
+              '| Performance | ' + Math.round(cat.performance.score * 100) + ' |\n' +
+              '| FCP | ' + fmt(audits['first-contentful-paint']?.numericValue) + ' ms |\n' +
+              '| LCP | ' + fmt(audits['largest-contentful-paint']?.numericValue) + ' ms |\n' +
+              '| TBT | ' + fmt(audits['total-blocking-time']?.numericValue) + ' ms |\n' +
+              '| CLS | ' + (audits['cumulative-layout-shift']?.numericValue ?? 'N/A') + ' |\n' +
+              '| SI | ' + fmt(audits['speed-index']?.numericValue) + ' ms |\n';
+            fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, md, { flag: 'a' });
+            console.log(md);
+          EOF
+
       - name: Upload Lighthouse report
         if: always()
         uses: actions/upload-artifact@v4
