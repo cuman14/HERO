@@ -1,6 +1,6 @@
 import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
 import { ActivatedRoute } from '@angular/router';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, DeferBlockState } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { vi, type Mocked } from 'vitest';
@@ -155,6 +155,9 @@ describe('SummaryPage', () => {
 
     component.ngOnInit();
     fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+    await deferBlocks[0].render(DeferBlockState.Complete);
+    fixture.detectChanges();
 
     const html = fixture.nativeElement.textContent as string;
     expect(html).toContain('142 REPS');
@@ -165,6 +168,9 @@ describe('SummaryPage', () => {
     const { component, fixture } = await setup({ routeParams: { heatAthleteId: 'ha-001' } });
 
     component.ngOnInit();
+    fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+    await deferBlocks[1].render(DeferBlockState.Complete);
     fixture.detectChanges();
 
     const html = fixture.nativeElement.textContent as string;
