@@ -105,11 +105,13 @@ because it measures with CDN, real compression, and production-like headers.
 - ❌ Add `startServerCommand` back to `lighthouserc.json` collect config
 - ❌ Add a `server` block to `lighthouserc.json`
 - ❌ Run `lhci autorun` without `--url` flag pointing to Vercel
+- ❌ Use `preset: "lighthouse:no-pbs"` — that preset does not exist
+- ❌ Use any `preset` in `lighthouserc.json` — just use custom assertions
 
 The URL is passed via `--url` CLI flag — `lighthouserc.json` should NOT contain
-a static URL or any local server configuration. It only holds: collect settings
-(mobile emulation, throttling), assertions (relaxed `warn`-only thresholds), and
-upload target (`temporary-public-storage`).
+a static URL, any local server configuration, or any preset. It only holds:
+collect settings (mobile emulation, throttling), assertions (relaxed `warn`-only
+thresholds), and upload target (`temporary-public-storage`).
 
 ## Testing
 
