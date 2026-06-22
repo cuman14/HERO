@@ -25,7 +25,6 @@
       }
     },
     "assert": {
-      "preset": "lighthouse:no-pbs",
       "assertions": {
         "first-contentful-paint": ["warn", { "maxNumericValue": 6000 }],
         "largest-contentful-paint": ["warn", { "maxNumericValue": 7000 }],
