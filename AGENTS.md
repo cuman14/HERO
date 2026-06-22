@@ -78,6 +78,39 @@ npx nx typecheck <project>
 npx nx affected -t build lint test
 ```
 
+## CI — Judge Performance Workflow
+
+`.github/workflows/perf-judge.yml` runs on pushes/PRs to `main` touching `apps/judge/**` or `libs/**`.
+
+- **Never use `npm ci`** — this repo uses **pnpm**. Always use `pnpm install --frozen-lockfile`.
+- **Never pin Node 20** — runner default (Node 24+) is fine. `setup-node@v4` with `cache: 'pnpm'`.
+- Two jobs: `bundle-analysis` (vite-bundle-visualizer + gzip sizes as artifact, 90-day retention) and `lighthouse` (LHCI, mobile emulation, 3 runs, assertions in `lighthouserc.json`).
+- LHCI report uploaded to `temporary-public-storage`. Link appears as PR check.
+
+### CRITICAL — LHCI runs against Vercel preview, NOT localhost
+
+The `lighthouse` job **deploys to Vercel preview** and runs LHCI against that URL.
+Do NOT revert to `http-server` localhost — Vercel preview is the correct approach
+because it measures with CDN, real compression, and production-like headers.
+
+**How it works:**
+1. Builds the judge app (`npx nx build judge --configuration=production`)
+2. Copies `apps/judge/vercel.json` to `dist/apps/judge/vercel.json`
+3. Runs `vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=team_sMmJmobd92vIBFKdJ2KxbtcE`
+4. Extracts the preview URL from Vercel output
+5. Runs `npx lhci autorun --url=$PREVIEW_URL`
+
+**What NOT to do (history — these caused regressions):**
+- ❌ Set `url` in `lighthouserc.json` to `http://localhost:8080`
+- ❌ Add `startServerCommand` back to `lighthouserc.json` collect config
+- ❌ Add a `server` block to `lighthouserc.json`
+- ❌ Run `lhci autorun` without `--url` flag pointing to Vercel
+
+The URL is passed via `--url` CLI flag — `lighthouserc.json` should NOT contain
+a static URL or any local server configuration. It only holds: collect settings
+(mobile emulation, throttling), assertions (relaxed `warn`-only thresholds), and
+upload target (`temporary-public-storage`).
+
 ## Testing
 
 - **All tests use Vitest.** Do not introduce Jest, Jasmine, Karma, or Cypress in new code, even if older docs mention them.
