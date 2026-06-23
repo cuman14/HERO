@@ -119,7 +119,9 @@ jobs:
             const dir = '.lighthouseci';
             const files = fs.readdirSync(dir).filter(f => f.startsWith('lhr-') && f.endsWith('.json'));
             if (!files.length) { console.log('No LHR files found'); process.exit(0); }
-            const lhr = JSON.parse(fs.readFileSync(dir + '/' + files[0], 'utf8'));
+            const lhrs = files.map(f => ({ file: f, lhr: JSON.parse(fs.readFileSync(dir + '/' + f, 'utf8')) }));
+            lhrs.sort((a, b) => a.lhr.categories.performance.score - b.lhr.categories.performance.score);
+            const lhr = lhrs[Math.floor(lhrs.length / 2)].lhr;
             const audits = lhr.audits;
             const cat = lhr.categories;
             const fmt = (v) => typeof v === 'number' ? v.toFixed(1) : 'N/A';
