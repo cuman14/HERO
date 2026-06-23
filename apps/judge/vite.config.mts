@@ -1,14 +1,31 @@
-/// <reference types='vitest' />
+//// <reference types='vitest' />
+import { Plugin, defineConfig } from 'vite';
 import angular from '@analogjs/vite-plugin-angular';
+import { augmentAppWithServiceWorker } from '@angular/build/private';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import tailwindcss from '@tailwindcss/vite';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+function swBuildPlugin(): Plugin {
+  let isSsr: boolean | undefined;
+  return {
+    name: 'analog-sw',
+    configResolved(config) {
+      isSsr = config.build?.ssr;
+    },
+    async closeBundle() {
+      if (isSsr) return;
+      console.log('Generating Angular service worker');
+      const outputPath = resolve(__dirname, '../../dist/apps/judge');
+      await augmentAppWithServiceWorker('apps/judge', process.cwd(), outputPath, '/');
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => ({
   root: __dirname,
@@ -52,6 +69,7 @@ export default defineConfig(({ mode }) => ({
         // },
       ],
     }),
+    swBuildPlugin(),
   ],
   test: {
     globals: true,

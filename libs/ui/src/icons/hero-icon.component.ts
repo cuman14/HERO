@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ICONS } from './icons';
 
-export type IconName = 'check' | 'x-mark' | 'trophy' | 'arrow-path' | 'flag' | 'check-circle' | 'arrow-right' | 'bolt' | 'eye';
+export type IconName = 'check' | 'x-mark' | 'trophy' | 'arrow-path' | 'flag' | 'check-circle' | 'arrow-right' | 'bolt' | 'eye' | 'pencil' | 'arrow-left';
 
 @Component({
   selector: 'lib-icon',
