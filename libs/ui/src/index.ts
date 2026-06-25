@@ -2,7 +2,6 @@
 export * from './atoms/button/button.component';
 export * from './atoms/input/input.component';
 export * from './icons/hero-icon.component';
-export * from './icons/icons';
 export * from './molecules/athlete-card/athlete-card.component';
 export * from './molecules/athlete-header/athlete-header.component';
 export * from './molecules/movement-card/movement-card.component';
