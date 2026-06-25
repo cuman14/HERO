@@ -1,5 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { Component, effect, ElementRef, inject, input } from '@angular/core';
 import { ICONS } from './icons';
 
 export type IconName = 'check' | 'x-mark' | 'trophy' | 'arrow-path' | 'flag' | 'check-circle' | 'arrow-right' | 'bolt' | 'eye' | 'pencil' | 'arrow-left';
@@ -7,23 +6,27 @@ export type IconName = 'check' | 'x-mark' | 'trophy' | 'arrow-path' | 'flag' | '
 @Component({
   selector: 'lib-icon',
   standalone: true,
-  template: `
-    <span [innerHTML]="svgContent()" class="inline-flex"></span>
-  `
+  template: '',
+  host: { class: 'inline-flex' },
 })
 export class HeroIconComponent {
-  name    = input.required<IconName>();
-  variant = input<'outline' | 'solid'>('outline');
+  name     = input.required<IconName>();
+  variant  = input<'outline' | 'solid'>('outline');
   iconClass = input('w-5 h-5');
 
-  private sanitizer = inject(DomSanitizer);
+  private elRef = inject(ElementRef<HTMLElement>);
 
-  svgContent = computed(() => {
+  private render = effect(() => {
     const path = ICONS[this.variant()][this.name()] || '';
     const fill = this.variant() === 'solid' ? 'currentColor' : 'none';
-    const stroke = this.variant() === 'outline' ? 'currentColor' : undefined;
-    const strokeWidth = this.variant() === 'outline' ? '1.5' : undefined;
-    const svg = `<svg class="${this.iconClass()}" fill="${fill}" viewBox="0 0 24 24" stroke-width="${strokeWidth ?? ''}" stroke="${stroke ?? ''}" aria-hidden="true">${path}</svg>`;
-    return this.sanitizer.bypassSecurityTrustHtml(svg);
+    const isOutline = this.variant() === 'outline';
+    const attrs = [
+      `class="${this.iconClass()}"`,
+      `fill="${fill}"`,
+      `viewBox="0 0 24 24"`,
+      `aria-hidden="true"`,
+      isOutline ? `stroke="currentColor" stroke-width="1.5"` : '',
+    ].filter(Boolean).join(' ');
+    this.elRef.nativeElement.innerHTML = `<svg ${attrs}>${path}</svg>`;
   });
 }
