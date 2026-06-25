@@ -56,5 +56,6 @@ vitest.config.*.timestamp*
 .vercel
 .devin
 .opencode
+.lighthouseci
 .windsurf
 .agents
