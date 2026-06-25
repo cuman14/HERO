@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { HeroIconComponent } from '@hero/ui';
+import { LucideIconComponent } from '@hero/ui';
 import { injectScoreErrorHandler } from '@hero/core';
 import { RegisterRepetitionsFacade } from '../../../application/register-repetitions.facade';
 import { ResultHeroComponent } from '../../components/result-hero/result-hero.component';
@@ -21,7 +21,7 @@ import { SignaturePadComponent } from '../../components/signature-pad/signature-
   standalone: true,
   imports: [
     CommonModule,
-    HeroIconComponent,
+    LucideIconComponent,
     ResultHeroComponent,
     RoundBreakdownListComponent,
     SignaturePadComponent,

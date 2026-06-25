@@ -1,4 +1,5 @@
 import { Component, computed, input, signal } from '@angular/core';
+import { LucideIconComponent } from '../../icons/lucide-icon.component';
 import { MovementHeaderComponent } from './movement-header.component';
 
 export interface MovementStackItem {
@@ -15,7 +16,7 @@ export interface MovementStackItem {
 @Component({
   selector: 'lib-movement-stack-card',
   standalone: true,
-  imports: [MovementHeaderComponent],
+  imports: [LucideIconComponent, MovementHeaderComponent],
   template: `
     <div class="relative w-full max-w-md mx-auto mt-12 mb-4">
       <lib-movement-header
@@ -37,11 +38,10 @@ export interface MovementStackItem {
         <div class="space-y-2 mt-2">
           @for (card of completedItems(); track card.id) {
             <div class="flex items-center gap-3 px-4 py-3 bg-white border border-slate-200 rounded-xl shadow-sm">
-              <span
-                class="material-symbols-outlined text-emerald-500 text-base shrink-0"
-                style="font-variation-settings: 'FILL' 1;"
-                >check_circle</span
-              >
+              <lib-icon
+                name="check-circle"
+                iconClass="w-4 h-4 text-emerald-500 shrink-0"
+              />
               <div class="flex-1 min-w-0">
                 <span class="text-sm font-semibold text-slate-900 truncate block"
                   >{{ card.name }}</span
@@ -75,11 +75,10 @@ export interface MovementStackItem {
               <span class="text-[10px] font-bold text-emerald-600"
                 >COMPLETED</span
               >
-              <span
-                class="material-symbols-outlined text-emerald-500 text-sm"
-                style="font-variation-settings: 'FILL' 1;"
-                >check_circle</span
-              >
+              <lib-icon
+                name="check-circle"
+                iconClass="w-3.5 h-3.5 text-emerald-500"
+              />
             </div>
           </div>
         }
@@ -103,11 +102,10 @@ export interface MovementStackItem {
               <span class="text-[10px] font-bold text-emerald-600"
                 >COMPLETED</span
               >
-              <span
-                class="material-symbols-outlined text-emerald-500 text-sm"
-                style="font-variation-settings: 'FILL' 1;"
-                >check_circle</span
-              >
+              <lib-icon
+                name="check-circle"
+                iconClass="w-3.5 h-3.5 text-emerald-500"
+              />
             </div>
           </div>
         }
@@ -123,10 +121,10 @@ export interface MovementStackItem {
           <div
             class="card-unlock-overlay absolute inset-0 rounded-3xl flex items-center justify-center pointer-events-none"
           >
-            <span
-              class="material-symbols-outlined text-primary text-5xl card-unlock-icon"
-              >lock_open</span
-            >
+            <lib-icon
+              name="lock-open"
+              iconClass="w-12 h-12 text-primary card-unlock-icon"
+            />
           </div>
 
           <div class="flex justify-between items-start mb-4">

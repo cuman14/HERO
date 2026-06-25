@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
-import { HeroIconComponent } from '../../icons/hero-icon.component';
+import { LucideIconComponent } from '../../icons/lucide-icon.component';
 
 export type AthleteCategoryLabel = 'RX' | 'SCALED' | 'TEAMS' | 'MASTERS';
 
 @Component({
   selector: 'lib-athlete-card',
   standalone: true,
-  imports: [CommonModule, HeroIconComponent],
+  imports: [CommonModule, LucideIconComponent],
   template: `
     <div
       [class]="cardClasses()"

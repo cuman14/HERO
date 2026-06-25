@@ -1,8 +1,10 @@
 import { Component, input, output } from '@angular/core';
+import { LucideIconComponent } from '../../icons/lucide-icon.component';
 
 @Component({
   selector: 'lib-numeric-keypad',
   standalone: true,
+  imports: [LucideIconComponent],
   template: `
     <div class="fixed bottom-0 left-0 w-full bg-background/80 backdrop-blur-md z-50 px-6 pt-2 pb-10">
       <div class="max-w-[280px] mx-auto grid grid-cols-3 gap-y-4 gap-x-6">
@@ -35,7 +37,7 @@ import { Component, input, output } from '@angular/core';
               (click)="confirmPressed.emit()"
               aria-label="Confirm"
             >
-              <span class="material-symbols-outlined text-white text-3xl font-bold">check</span>
+              <lib-icon name="check" iconClass="w-7 h-7 text-white" />
             </button>
           }
         }

@@ -184,7 +184,7 @@ describe('MovementStackCardComponent', () => {
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
-      const chevron = compiled.querySelector('button[aria-label="Toggle completed movements list"] .material-symbols-outlined');
+      const chevron = compiled.querySelector('button[aria-label="Toggle completed movements list"] lib-icon');
       expect(chevron?.classList.contains('rotate-180')).toBe(false);
 
       fixture.componentInstance.expanded.set(true);

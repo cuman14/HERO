@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  LucideIconComponent,
   MovementStackCardComponent,
   MovementStackItem,
   NumericKeypadComponent,
@@ -21,7 +22,7 @@ import { mapMovementToStackItem } from './movement-stack-item.mapper';
 @Component({
   selector: 'app-register-repetitions-page',
   standalone: true,
-  imports: [CommonModule, MovementStackCardComponent, NumericKeypadComponent],
+  imports: [CommonModule, LucideIconComponent, MovementStackCardComponent, NumericKeypadComponent],
   templateUrl: './register-repetitions.page.html',
   styleUrl: './register-repetitions.page.css',
   providers: [InputBufferStrategy],

@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ButtonComponent, HeroIconComponent, InputComponent } from '@hero/ui';
+import { ButtonComponent, LucideIconComponent, InputComponent } from '@hero/ui';
 
 @Component({
   selector: 'app-heat-access',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, InputComponent, HeroIconComponent],
+  imports: [CommonModule, ButtonComponent, InputComponent, LucideIconComponent],
   templateUrl: './heat-access.page.html',
   styleUrl: './heat-access.page.css',
 })

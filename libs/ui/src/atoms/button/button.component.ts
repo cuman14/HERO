@@ -1,10 +1,10 @@
 import { Component, computed, input, output } from '@angular/core';
-import { HeroIconComponent } from '../../icons/hero-icon.component';
+import { LucideIconComponent } from '../../icons/lucide-icon.component';
 
 @Component({
   selector: 'lib-button',
   standalone: true,
-  imports: [HeroIconComponent],
+  imports: [LucideIconComponent],
   template: `
     <button
       [class]="buttonClasses()"

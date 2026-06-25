@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, input } from '@angular/core';
-import { HeroIconComponent } from '../../icons/hero-icon.component';
+import { LucideIconComponent } from '../../icons/lucide-icon.component';
 
 @Component({
   selector: 'lib-wod-info-card',
   standalone: true,
-  imports: [CommonModule, HeroIconComponent],
+  imports: [CommonModule, LucideIconComponent],
   template: `
     <div
       class="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900"

@@ -1,10 +1,10 @@
 import { Component, computed, input, output } from '@angular/core';
-import { HeroIconComponent, IconName } from '../../icons/hero-icon.component';
+import { LucideIconComponent, IconName } from '../../icons/lucide-icon.component';
 
 @Component({
   selector: 'lib-input',
   standalone: true,
-  imports: [HeroIconComponent],
+  imports: [LucideIconComponent],
   template: `
     <div class="flex flex-col gap-2">
       @if (label()) {
