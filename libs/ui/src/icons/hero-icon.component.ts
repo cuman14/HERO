@@ -8,15 +8,7 @@ export type IconName = 'check' | 'x-mark' | 'trophy' | 'arrow-path' | 'flag' | '
   selector: 'lib-icon',
   standalone: true,
   template: `
-    <svg
-      [class]="iconClass()"
-      [attr.fill]="variant() === 'solid' ? 'currentColor' : 'none'"
-      [attr.viewBox]="'0 0 24 24'"
-      [attr.stroke-width]="variant() === 'outline' ? '1.5' : undefined"
-      [attr.stroke]="variant() === 'outline' ? 'currentColor' : undefined"
-      [attr.aria-hidden]="true"
-      [innerHTML]="svgContent()"
-    ></svg>
+    <span [innerHTML]="svgContent()" class="inline-flex"></span>
   `
 })
 export class HeroIconComponent {
@@ -27,7 +19,11 @@ export class HeroIconComponent {
   private sanitizer = inject(DomSanitizer);
 
   svgContent = computed(() => {
-    const svgPath = ICONS[this.variant()][this.name()] || '';
-    return this.sanitizer.bypassSecurityTrustHtml(svgPath);
+    const path = ICONS[this.variant()][this.name()] || '';
+    const fill = this.variant() === 'solid' ? 'currentColor' : 'none';
+    const stroke = this.variant() === 'outline' ? 'currentColor' : undefined;
+    const strokeWidth = this.variant() === 'outline' ? '1.5' : undefined;
+    const svg = `<svg class="${this.iconClass()}" fill="${fill}" viewBox="0 0 24 24" stroke-width="${strokeWidth ?? ''}" stroke="${stroke ?? ''}" aria-hidden="true">${path}</svg>`;
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
   });
 }
